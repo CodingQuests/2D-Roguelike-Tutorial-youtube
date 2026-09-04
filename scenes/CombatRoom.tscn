@@ -1,0 +1,51 @@
+[gd_scene load_steps=9 format=3 uid="uid://bcombatroomfor"]
+
+[ext_resource type="Script" path="res://scripts/RoomController.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/Dungeon.gd" id="2"]
+[ext_resource type="PackedScene" uid="uid://bplayerforge00" path="res://scenes/Player.tscn" id="3"]
+[ext_resource type="Script" path="res://scripts/PlayerCamera.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/Atmosphere.gd" id="5"]
+
+; background_mode 3 = BG_CANVAS: composite over the 2D canvas rather than
+; clearing it. With hdr_2d on, only colours above the threshold bloom — which
+; is why corrupted elites (modulate 1.5) and brazier flames glow but the floor
+; doesn't. Screen blend rather than additive so it can't blow out to white.
+[sub_resource type="Environment" id="Environment_glow"]
+background_mode = 3
+glow_enabled = true
+glow_intensity = 0.45
+glow_strength = 0.9
+glow_bloom = 0.05
+glow_blend_mode = 1
+glow_hdr_threshold = 1.15
+glow_hdr_scale = 2.0
+
+[node name="CombatRoom" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("1")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_glow")
+
+[node name="Atmosphere" type="CanvasModulate" parent="."]
+script = ExtResource("5")
+
+[node name="Floor" type="TileMapLayer" parent="."]
+y_sort_enabled = true
+script = ExtResource("2")
+
+[node name="Player" parent="." instance=ExtResource("3")]
+position = Vector2(320, 192)
+
+[node name="Enemies" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Projectiles" type="Node2D" parent="." groups=["projectiles"]]
+
+[node name="Pickups" type="Node2D" parent="." groups=["pickups"]]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(320, 192)
+zoom = Vector2(3, 3)
+script = ExtResource("4")
+target_path = NodePath("../Player")

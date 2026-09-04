@@ -1,0 +1,216 @@
+; The single source of truth for how the game's UI looks.
+;
+; Set as the project-wide default theme (Project Settings > gui/theme/custom),
+; so every Control in every scene inherits it without being assigned a theme.
+; Prefer adding a *type variation* here over an add_theme_*_override() in code —
+; variations keep the look in one file and out of the game logic.
+;
+; Palette (forge / dungeon):
+;   ink      0.055 0.055 0.078   panel fill
+;   border   0.42  0.47  0.60    panel + widget edges
+;   text     0.91  0.89  0.855   primary copy
+;   muted    0.58  0.61  0.69    secondary copy
+;   gold     0.95  0.70  0.24    currency
+;   ember    0.90  0.33  0.24    danger / boss / death
+;   verdant  0.37  0.75  0.42    health / essence
+;   arcane   0.64  0.38  0.85    corruption / actives
+;   frost    0.33  0.78  0.88    dash / cooldowns
+;
+; Type scale is locked to multiples of Silkscreen's 8px design size — 16 body,
+; 24 heading, 32 banner, 48 hero — so glyphs always land on whole pixels.
+[gd_resource type="Theme" load_steps=10 format=3 uid="uid://dksv2l7nvcs4l"]
+
+[ext_resource type="FontFile" uid="uid://iktr8gx236ug" path="res://Assets/Fonts/Silkscreen-Regular.ttf" id="font"]
+[ext_resource type="FontFile" uid="uid://c5j722fpoxeq5" path="res://Assets/Fonts/Silkscreen-Bold.ttf" id="font_bold"]
+[ext_resource type="Texture2D" uid="uid://btvk1x222f7km" path="res://Assets/UI/Tiles/Large tiles/Thick outline/tile_0004.png" id="btn_tex"]
+
+; --- Buttons: Kenney wood-and-iron nine-patch. Warm, so they read as the
+; --- interactive thing against the cool stone panels.
+[sub_resource type="StyleBoxTexture" id="btn_normal"]
+content_margin_left = 18.0
+content_margin_top = 11.0
+content_margin_right = 18.0
+content_margin_bottom = 11.0
+texture = ExtResource("btn_tex")
+texture_margin_left = 11.0
+texture_margin_top = 11.0
+texture_margin_right = 11.0
+texture_margin_bottom = 11.0
+
+[sub_resource type="StyleBoxTexture" id="btn_hover"]
+content_margin_left = 18.0
+content_margin_top = 11.0
+content_margin_right = 18.0
+content_margin_bottom = 11.0
+texture = ExtResource("btn_tex")
+texture_margin_left = 11.0
+texture_margin_top = 11.0
+texture_margin_right = 11.0
+texture_margin_bottom = 11.0
+modulate_color = Color(1.28, 1.22, 1.12, 1)
+
+[sub_resource type="StyleBoxTexture" id="btn_pressed"]
+content_margin_left = 18.0
+content_margin_top = 13.0
+content_margin_right = 18.0
+content_margin_bottom = 9.0
+texture = ExtResource("btn_tex")
+texture_margin_left = 11.0
+texture_margin_top = 11.0
+texture_margin_right = 11.0
+texture_margin_bottom = 11.0
+modulate_color = Color(0.72, 0.68, 0.64, 1)
+
+; --- Panels: flat dark slabs with a hard 2px edge. Square corners on purpose —
+; --- rounded corners fight pixel art.
+[sub_resource type="StyleBoxFlat" id="panel_dark"]
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
+bg_color = Color(0.055, 0.055, 0.078, 0.88)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.42, 0.47, 0.6, 1)
+
+; Nested / lighter slab, e.g. the build list inside the stat column.
+[sub_resource type="StyleBoxFlat" id="panel_inset"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.09, 0.09, 0.125, 0.82)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.34, 0.45, 1)
+
+; Bar track — the dark channel a fill sits inside.
+[sub_resource type="StyleBoxFlat" id="bar_track"]
+bg_color = Color(0.05, 0.05, 0.07, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.28, 0.31, 0.4, 1)
+
+[sub_resource type="StyleBoxFlat" id="slider_track"]
+content_margin_top = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.05, 0.05, 0.07, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.28, 0.31, 0.4, 1)
+
+[sub_resource type="StyleBoxFlat" id="slider_fill"]
+bg_color = Color(0.95, 0.7, 0.24, 1)
+
+[resource]
+default_font = ExtResource("font")
+default_font_size = 16
+
+; --- Base types -------------------------------------------------------------
+Button/colors/font_color = Color(0.95, 0.93, 0.88, 1)
+Button/colors/font_hover_color = Color(1, 1, 1, 1)
+Button/colors/font_pressed_color = Color(0.86, 0.82, 0.74, 1)
+Button/colors/font_disabled_color = Color(0.5, 0.5, 0.55, 1)
+Button/colors/font_outline_color = Color(0.03, 0.02, 0.02, 1)
+Button/constants/outline_size = 4
+Button/font_sizes/font_size = 16
+Button/fonts/font = ExtResource("font_bold")
+Button/styles/normal = SubResource("btn_normal")
+Button/styles/hover = SubResource("btn_hover")
+Button/styles/pressed = SubResource("btn_pressed")
+Button/styles/focus = SubResource("btn_hover")
+Button/styles/disabled = SubResource("btn_pressed")
+
+; Every label gets a dark outline. This is what keeps HUD text readable over
+; both the bright floor and the torch-lit dark floor, and it means the status
+; banner needs no backing plate.
+Label/colors/font_color = Color(0.91, 0.89, 0.855, 1)
+Label/colors/font_outline_color = Color(0.03, 0.02, 0.02, 1)
+Label/constants/outline_size = 4
+Label/font_sizes/font_size = 16
+
+Panel/styles/panel = SubResource("panel_dark")
+PanelContainer/styles/panel = SubResource("panel_dark")
+ProgressBar/styles/background = SubResource("bar_track")
+HSlider/styles/slider = SubResource("slider_track")
+HSlider/styles/grabber_area = SubResource("slider_fill")
+HSlider/styles/grabber_area_highlight = SubResource("slider_fill")
+
+; --- Label variations -------------------------------------------------------
+; Set `theme_type_variation` on a Label to use one of these.
+Stat/base_type = &"Label"
+Stat/fonts/font = ExtResource("font_bold")
+Stat/font_sizes/font_size = 16
+
+StatDim/base_type = &"Label"
+StatDim/colors/font_color = Color(0.58, 0.61, 0.69, 1)
+StatDim/font_sizes/font_size = 16
+
+StatGold/base_type = &"Label"
+StatGold/colors/font_color = Color(0.95, 0.7, 0.24, 1)
+StatGold/font_sizes/font_size = 16
+
+StatEssence/base_type = &"Label"
+StatEssence/colors/font_color = Color(0.45, 0.82, 0.55, 1)
+StatEssence/font_sizes/font_size = 16
+
+StatArcane/base_type = &"Label"
+StatArcane/colors/font_color = Color(0.7, 0.5, 0.92, 1)
+StatArcane/font_sizes/font_size = 16
+
+Hint/base_type = &"Label"
+Hint/colors/font_color = Color(0.62, 0.64, 0.72, 0.75)
+Hint/constants/outline_size = 4
+Hint/font_sizes/font_size = 16
+
+; Big centred callout: "FLOOR 1 — CLEAR THE BOSS ROOM", "ROOM CLEAR".
+Banner/base_type = &"Label"
+Banner/fonts/font = ExtResource("font_bold")
+Banner/colors/font_color = Color(1, 0.94, 0.82, 1)
+Banner/constants/outline_size = 8
+Banner/font_sizes/font_size = 32
+
+Heading/base_type = &"Label"
+Heading/fonts/font = ExtResource("font_bold")
+Heading/font_sizes/font_size = 24
+Heading/constants/outline_size = 6
+
+Combo/base_type = &"Label"
+Combo/fonts/font = ExtResource("font_bold")
+Combo/colors/font_color = Color(1, 0.8, 0.3, 1)
+Combo/constants/outline_size = 6
+Combo/font_sizes/font_size = 24
+
+Danger/base_type = &"Label"
+Danger/fonts/font = ExtResource("font_bold")
+Danger/colors/font_color = Color(0.9, 0.33, 0.24, 1)
+Danger/constants/outline_size = 6
+Danger/font_sizes/font_size = 24
+
+; The death screen title.
+Hero/base_type = &"Label"
+Hero/fonts/font = ExtResource("font_bold")
+Hero/colors/font_color = Color(0.9, 0.24, 0.26, 1)
+Hero/constants/outline_size = 10
+Hero/font_sizes/font_size = 48
+
+CardTitle/base_type = &"Label"
+CardTitle/fonts/font = ExtResource("font_bold")
+CardTitle/font_sizes/font_size = 16
+CardTitle/constants/outline_size = 5
+
+CardBody/base_type = &"Label"
+CardBody/colors/font_color = Color(0.74, 0.76, 0.82, 1)
+CardBody/font_sizes/font_size = 16
+
+; --- Container variations ---------------------------------------------------
+Inset/base_type = &"PanelContainer"
+Inset/styles/panel = SubResource("panel_inset")

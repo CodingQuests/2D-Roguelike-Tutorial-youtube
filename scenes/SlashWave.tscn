@@ -1,0 +1,37 @@
+[gd_scene load_steps=6 format=3 uid="uid://bslashwave0001"]
+
+[ext_resource type="Script" path="res://scripts/SlashWave.gd" id="1"]
+[ext_resource type="Texture2D" path="res://fx_quad.tres" id="2"]
+[ext_resource type="Shader" path="res://shaders/fx_slash.gdshader" id="3"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_wave"]
+radius = 11.0
+height = 34.0
+
+; The flying crescent uses the same arc shader as the melee swing, held at a
+; fixed sweep — so the Echo Blade's projectile visibly reads as "a slash that
+; kept going" rather than as an unrelated polygon.
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wave"]
+shader = ExtResource("3")
+shader_parameter/color = Color(1.1, 1.15, 1.4, 1)
+shader_parameter/progress = 1.0
+shader_parameter/arc = 1.9
+shader_parameter/inner = 0.42
+shader_parameter/outer = 0.95
+shader_parameter/trail = 1.0
+
+[node name="SlashWave" type="Area2D" groups=["hitbox"]]
+collision_layer = 32
+collision_mask = 1
+script = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_wave")
+
+[node name="Visual" type="Sprite2D" parent="."]
+z_index = 4
+light_mask = 0
+material = SubResource("ShaderMaterial_wave")
+texture = ExtResource("2")
+scale = Vector2(0.72, 0.72)

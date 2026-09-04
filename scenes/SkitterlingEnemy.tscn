@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://cb7i5ns5c42j2"]
+
+[ext_resource type="PackedScene" path="res://scenes/EnemyBase.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/SkitterlingEnemy.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://defil8w1h0amm" path="res://Assets/Tiles/tile_0120.png" id="3"]
+
+[node name="SkitterlingEnemy" instance=ExtResource("1")]
+script = ExtResource("2")
+
+[node name="Sprite2D" parent="." index="1"]
+texture = ExtResource("3")
+scale = Vector2(1.5, 1.5)
+
+[node name="ContactShadow" parent="." index="0"]
+polygon = PackedVector2Array(6.75, 13.0, 6.24, 14.03, 4.77, 14.91, 2.58, 15.49, 0.0, 15.7, -2.58, 15.49, -4.77, 14.91, -6.24, 14.03, -6.75, 13.0, -6.24, 11.97, -4.77, 11.09, -2.58, 10.51, -0.0, 10.3, 2.58, 10.51, 4.77, 11.09, 6.24, 11.97)

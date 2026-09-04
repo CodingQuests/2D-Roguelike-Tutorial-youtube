@@ -1,0 +1,14 @@
+[gd_resource type="GradientTexture2D" load_steps=2 format=3]
+
+; A plain white 64x64 quad. Every procedural FX shader ignores TEXTURE entirely
+; and draws from UV — this exists only to give the Sprite2D a quad of a known
+; size to rasterise. 64px means a sprite scale of 1.0 is a 64px effect.
+
+[sub_resource type="Gradient" id="solid_white"]
+offsets = PackedFloat32Array(0, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
+
+[resource]
+gradient = SubResource("solid_white")
+width = 64
+height = 64

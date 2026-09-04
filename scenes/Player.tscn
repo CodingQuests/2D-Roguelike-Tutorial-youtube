@@ -1,0 +1,96 @@
+[gd_scene load_steps=12 format=3 uid="uid://c7ejb3eny0vwt"]
+
+[ext_resource type="Script" uid="uid://dwo3xjy0q7872" path="res://scripts/PlayerController.gd" id="1"]
+[ext_resource type="Script" uid="uid://dcs2pc48scnwf" path="res://scripts/HealthComponent.gd" id="2"]
+[ext_resource type="Script" uid="uid://eqshkb0yh83" path="res://scripts/WeaponController.gd" id="3"]
+[ext_resource type="Script" uid="uid://b3xmury2qobjk" path="res://scripts/HurtboxComponent.gd" id="4"]
+[ext_resource type="Script" uid="uid://dk3m3iabfo7wb" path="res://scripts/HitboxComponent.gd" id="5"]
+[ext_resource type="Texture2D" uid="uid://cghfo48xt24ri" path="res://Assets/Tiles/tile_0096.png" id="6"]
+[ext_resource type="Texture2D" uid="uid://c5crvkkvdrcxh" path="res://Assets/Tiles/tile_0105.png" id="7"]
+[ext_resource type="Texture2D" uid="uid://cyxwc45la1yom" path="res://light_radial.tres" id="8"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_player"]
+radius = 7.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hit"]
+size = Vector2(30, 26)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hurt"]
+size = Vector2(15, 18)
+
+[node name="Player" type="CharacterBody2D" groups=["player"] unique_id=751795527]
+collision_layer = 2
+collision_mask = 5
+script = ExtResource("1")
+
+[node name="ContactShadow" type="Polygon2D" parent="." unique_id=595057615]
+z_index = -1
+color = Color(0, 0, 0, 0.34)
+light_mask = 0
+polygon = PackedVector2Array(10.0, 17.0, 9.24, 18.53, 7.07, 19.83, 3.83, 20.7, 0.0, 21.0, -3.83, 20.7, -7.07, 19.83, -9.24, 18.53, -10.0, 17.0, -9.24, 15.47, -7.07, 14.17, -3.83, 13.3, -0.0, 13.0, 3.83, 13.3, 7.07, 14.17, 9.24, 15.47)
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=595057616]
+scale = Vector2(2, 2)
+texture = ExtResource("6")
+
+[node name="Torch" type="PointLight2D" parent="." unique_id=595057617]
+texture = ExtResource("8")
+texture_scale = 1.8
+energy = 0.8
+color = Color(1, 0.88, 0.7, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=506038475]
+shape = SubResource("CircleShape2D_player")
+
+[node name="Health" type="Node" parent="." unique_id=345599652]
+script = ExtResource("2")
+
+[node name="WeaponPivot" type="Node2D" parent="." unique_id=269198068]
+script = ExtResource("3")
+
+[node name="WeaponSprite" type="Sprite2D" parent="WeaponPivot" unique_id=2061510586]
+position = Vector2(25, 7.275957e-12)
+rotation = 1.5708
+scale = Vector2(1.6, 1.6)
+texture = ExtResource("7")
+
+[node name="WeaponGlow" type="PointLight2D" parent="WeaponPivot" unique_id=2061510587]
+position = Vector2(26, 0)
+texture = ExtResource("8")
+texture_scale = 0.5
+energy = 0.0
+color = Color(0.75, 0.45, 1, 1)
+
+[node name="CorruptionFX" type="CPUParticles2D" parent="WeaponPivot" unique_id=1782909701]
+position = Vector2(16, 0)
+emitting = false
+amount = 12
+lifetime = 0.7
+direction = Vector2(0, 0)
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 4.0
+initial_velocity_max = 16.0
+scale_amount_max = 2.0
+color = Color(0.4, 0.1, 0.5, 0.7)
+
+[node name="AttackHitbox" type="Area2D" parent="WeaponPivot" unique_id=1328764021]
+collision_layer = 32
+collision_mask = 0
+monitoring = false
+script = ExtResource("5")
+damage = 20.0
+knockback_force = 220.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WeaponPivot/AttackHitbox" unique_id=1110250941]
+position = Vector2(23, 0)
+shape = SubResource("RectangleShape2D_hit")
+disabled = true
+
+[node name="Hurtbox" type="Area2D" parent="." unique_id=27121742]
+collision_layer = 8
+collision_mask = 64
+script = ExtResource("4")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=69718200]
+shape = SubResource("RectangleShape2D_hurt")

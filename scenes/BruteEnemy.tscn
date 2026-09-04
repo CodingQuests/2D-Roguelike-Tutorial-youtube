@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://y6y2wfidk464"]
+
+[ext_resource type="PackedScene" path="res://scenes/EnemyBase.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/BruteEnemy.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://0nlnaiwlsw7p" path="res://Assets/Tiles/tile_0086.png" id="3"]
+
+[node name="BruteEnemy" instance=ExtResource("1")]
+script = ExtResource("2")
+
+[node name="Sprite2D" parent="." index="1"]
+texture = ExtResource("3")
+scale = Vector2(2.5, 2.5)
+
+[node name="ContactShadow" parent="." index="0"]
+polygon = PackedVector2Array(11.25, 21.0, 10.39, 22.72, 7.95, 24.18, 4.31, 25.16, 0.0, 25.5, -4.31, 25.16, -7.95, 24.18, -10.39, 22.72, -11.25, 21.0, -10.39, 19.28, -7.95, 17.82, -4.31, 16.84, -0.0, 16.5, 4.31, 16.84, 7.95, 17.82, 10.39, 19.28)

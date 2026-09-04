@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://cp6vwwiyoj35d"]
+
+[ext_resource type="Script" path="res://scripts/Pickup.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://cp17xfwvssgi2" path="res://Assets/Tiles/tile_0115.png" id="2"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_pick"]
+radius = 9.0
+
+[node name="HealthPickup" type="Area2D"]
+collision_layer = 128
+collision_mask = 2
+script = ExtResource("1")
+kind = 0
+amount = 30.0
+fx_color = Color(0.95, 0.3, 0.3, 1)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2")
+scale = Vector2(1.4, 1.4)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_pick")

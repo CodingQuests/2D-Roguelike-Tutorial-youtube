@@ -35,6 +35,11 @@ git diff lesson-1.1 lesson-1.2
 shows you exactly what the lesson added — which is often the fastest way to catch
 up if you got lost partway through a video.
 
+> **Not every branch is cut yet.** 🟢 branches hold that lesson's real state.
+> 🟡 branches have accurate lesson notes but their code still mirrors `main` (the
+> finished game) — they get their snapshot when the lesson is recorded. Full
+> detail in [BRANCH_STATUS.md](BRANCH_STATUS.md).
+
 ---
 
 ## The 28 lessons
@@ -42,62 +47,62 @@ up if you got lost partway through a video.
 ### Chapter 0 — The Plan
 | Branch | Lesson | Ends with |
 |---|---|---|
-| `lesson-0.1` | The whole game, and why we build it backwards | An empty project, set up and ready |
+| 🟢 `lesson-0.1` | The whole game, and why we build it backwards | An empty project, set up and ready |
 
 ### Chapter 1 — Make the Player Worth Controlling
 | Branch | Lesson | Ends with |
 |---|---|---|
-| `lesson-1.1` | Move and aim | Walking one way, pointing another |
-| `lesson-1.2` | The dash | One dash, then a wait |
-| `lesson-1.3` | The frames that make a dodge work | Blue tint, passing through a hazard |
-| `lesson-1.4` | A camera that doesn't fight you | Smooth follow, then shake that means something |
+| 🟢 `lesson-1.1` | Move and aim | Walking one way, pointing another |
+| 🟢 `lesson-1.2` | The dash | One dash, then a wait |
+| 🟢 `lesson-1.3` | The frames that make a dodge work | Blue tint, passing through a hazard |
+| 🟢 `lesson-1.4` | A camera that doesn't fight you | Smooth follow, then shake that means something |
 
 ### Chapter 2 — Make Hitting Something Feel Good
 | Branch | Lesson | Ends with |
 |---|---|---|
-| `lesson-2.1` | Something that can be hurt | A dummy takes damage and dies |
-| `lesson-2.2` | Who checks whom | Hitbox/hurtbox, and no friendly-fire code |
-| `lesson-2.3` | The swing | It swings, and it feels like nothing |
-| `lesson-2.4` | Make the hit land | The same swing, before and after seven layers |
+| 🟢 `lesson-2.1` | Something that can be hurt | A dummy takes damage and dies |
+| 🟢 `lesson-2.2` | Who checks whom | Hitbox/hurtbox, and no friendly-fire code |
+| 🟡 `lesson-2.3` | The swing | It swings, and it feels like nothing |
+| 🟡 `lesson-2.4` | Make the hit land | The same swing, before and after seven layers |
 
 ### Chapter 3 — Make One Room Worth Fighting In
 | Branch | Lesson | Ends with |
 |---|---|---|
-| `lesson-3.1` | One enemy, off one script | It chases and hits you |
-| `lesson-3.2` | Telegraphs — being readable beats being hard | A fight you can learn |
-| `lesson-3.3` | Four enemies from the same base | Four different decisions |
-| `lesson-3.4` | A boss with a tell | Patterns and an enrage |
-| `lesson-3.5` | The room knows the fight is over | Doors lock, wave clears, HUD reads |
+| 🟡 `lesson-3.1` | One enemy, off one script | It chases and hits you |
+| 🟡 `lesson-3.2` | Telegraphs — being readable beats being hard | A fight you can learn |
+| 🟡 `lesson-3.3` | Four enemies from the same base | Four different decisions |
+| 🟡 `lesson-3.4` | A boss with a tell | Patterns and an enrage |
+| 🟡 `lesson-3.5` | The room knows the fight is over | Doors lock, wave clears, HUD reads |
 
 ### Chapter 4 — Turn It Into a Run
 | Branch | Lesson | Ends with |
 |---|---|---|
-| `lesson-4.1` | A room built in code | Floor, walls, a dressed space |
-| `lesson-4.2` | Why random rooms are boring | Constrained randomness, dead space proved |
-| `lesson-4.3` | A floor of connected rooms | Walk a whole floor |
-| `lesson-4.4` | Knowing where you are | Minimap, room types, gated doors |
+| 🟡 `lesson-4.1` | A room built in code | Floor, walls, a dressed space |
+| 🟡 `lesson-4.2` | Why random rooms are boring | Constrained randomness, dead space proved |
+| 🟡 `lesson-4.3` | A floor of connected rooms | Walk a whole floor |
+| 🟡 `lesson-4.4` | Knowing where you are | Minimap, room types, gated doors |
 
 ### Chapter 5 — Make Every Run Different
 | Branch | Lesson | Ends with |
 |---|---|---|
-| `lesson-5.1` | The reward moment | Three cards, one choice |
-| `lesson-5.2` | Power that costs you something | Corruption rising, and you feel it |
-| `lesson-5.3` | Items you own, not stats you bump | Effects that compound |
-| `lesson-5.4` | Gold, shops and the deal you shouldn't take | The altar, paid in health |
+| 🟡 `lesson-5.1` | The reward moment | Three cards, one choice |
+| 🟡 `lesson-5.2` | Power that costs you something | Corruption rising, and you feel it |
+| 🟡 `lesson-5.3` | Items you own, not stats you bump | Effects that compound |
+| 🟡 `lesson-5.4` | Gold, shops and the deal you shouldn't take | The altar, paid in health |
 
 ### Chapter 6 — Make Them Want Another Run
 | Branch | Lesson | Ends with |
 |---|---|---|
-| `lesson-6.1` | A HUD that shows less | Thirteen elements down to five |
-| `lesson-6.2` | Dying properly | A death screen that shows what the run was |
-| `lesson-6.3` | Unlocks that widen, not unlocks that inflate | The Forge, and why +5 health is a trap |
+| 🟡 `lesson-6.1` | A HUD that shows less | Thirteen elements down to five |
+| 🟡 `lesson-6.2` | Dying properly | A death screen that shows what the run was |
+| 🟡 `lesson-6.3` | Unlocks that widen, not unlocks that inflate | The Forge, and why +5 health is a trap |
 
 ### Chapter 7 — Make It Feel Finished
 | Branch | Lesson | Ends with |
 |---|---|---|
-| `lesson-7.1` | The shell | Title, transitions, pause, restart |
-| `lesson-7.2` | Sound is half the game | The same fight, muted then scored |
-| `lesson-7.3` | The polish pass, and shipping it | Juice everywhere, then export |
+| 🟡 `lesson-7.1` | The shell | Title, transitions, pause, restart |
+| 🟡 `lesson-7.2` | Sound is half the game | The same fight, muted then scored |
+| 🟢 `lesson-7.3` | The polish pass, and shipping it | Juice everywhere, then export |
 
 `lesson-7.3` and `main` are the same tree — the last lesson *is* the finished game.
 

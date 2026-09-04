@@ -1,25 +1,30 @@
 extends CharacterBody2D
-## TEMPORARY. A thing to hit, so the HealthComponent can be proved to work
-## before a real damage system exists.
+## TEMPORARY. A thing to hit, so the damage system can be proved to work before
+## real enemies exist.
 ##
-## Note what isn't in this file: any health logic at all. It owns a
-## HealthComponent and listens for one signal. That's the whole point of the
-## component — the dummy, the player and every barrel share the same fifty
-## lines and none of them reimplement any of it.
-##
-## Lesson 2.2 replaces the click-to-damage below with a real hitbox/hurtbox.
+## Note what isn't in this file: any health logic, and any check for whose
+## attack just landed. It owns a HealthComponent and a HurtboxComponent and
+## listens for one signal. Chapter 3 replaces it with EnemyBase.
+
+const KNOCKBACK_DECAY := 1700.0
 
 @onready var health: HealthComponent = $Health
+
+var _knockback := Vector2.ZERO
 
 
 func _ready() -> void:
 	health.died.connect(_on_died)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("quick_attack"):
-		health.damage(10.0)
-		print(health.current_health)
+func _physics_process(delta: float) -> void:
+	velocity = _knockback
+	_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
+	move_and_slide()
+
+
+func apply_knockback(dir: Vector2, force: float) -> void:
+	_knockback = dir.normalized() * force
 
 
 func _on_died() -> void:

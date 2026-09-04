@@ -10,8 +10,15 @@ extends CharacterBody2D
 @export var dash_duration: float = 0.14
 @export var dash_cooldown: float = 0.6
 
+## The player is shoved less than an enemy would be. Hits still need to
+## register, but being flung across the room every time something touches you
+## feels awful.
+const KNOCKBACK_DECAY := 1700.0
+const KNOCKBACK_TAKEN := 0.6
+
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var weapon: Node2D = $WeaponPivot
+@onready var hurtbox: HurtboxComponent = $Hurtbox
 
 var _last_good_pos := Vector2.ZERO
 
@@ -23,10 +30,9 @@ var _dash_timer := 0.0
 var _dash_cd_timer := 0.0
 var _dash_dir := Vector2.RIGHT
 
-## True while the dash is active. Chapter 2's damage system reads this;
-## invulnerability is a controller concept, not a damage concept. The dash
-## drives it and the damage system reads it — never the other way round.
-var invulnerable := false
+## A live channel other systems write to. This is the variable the _finite()
+## guard in lesson 1.1 was put there for.
+var _knockback := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -44,7 +50,8 @@ func _physics_process(delta: float) -> void:
 	if _is_dashing:
 		velocity = _dash_dir * dash_speed
 	else:
-		velocity = _get_move_input() * move_speed
+		velocity = _get_move_input() * move_speed + _knockback
+	_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
 
 	# Guard against a non-finite velocity: move_and_slide() would spam
 	# "Vector2 cannot be normalized" forever with no stack trace.
@@ -112,7 +119,10 @@ func _start_dash() -> void:
 	_is_dashing = true
 	_dash_timer = dash_duration
 	_dash_cd_timer = dash_cooldown
-	invulnerable = true
+	# The dash SETS it, the damage system READS it. The dash doesn't know what
+	# damage is, and the damage system doesn't know what a dash is — which is
+	# why chapter 5's blink ability is one line and touches nothing.
+	hurtbox.invulnerable = true
 	# The tell. An invisible rule is an unfair rule — if the player can't see
 	# when they were safe, they can't learn to be safe on purpose.
 	sprite.modulate = Color(0.7, 0.9, 1.0)
@@ -120,8 +130,12 @@ func _start_dash() -> void:
 
 func _end_dash() -> void:
 	_is_dashing = false
-	invulnerable = false
+	hurtbox.invulnerable = false
 	sprite.modulate = Color.WHITE
+
+
+func apply_knockback(dir: Vector2, force: float) -> void:
+	_knockback = dir.normalized() * force * KNOCKBACK_TAKEN
 
 
 ## 1.0 = ready, 0.0 = just used. A float, not a Timer — the HUD needs a

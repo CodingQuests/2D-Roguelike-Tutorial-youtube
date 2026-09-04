@@ -14,6 +14,8 @@ func _ready() -> void:
 
 
 func _on_body_entered(body: Node2D) -> void:
-	if body is PlayerController and body.invulnerable:
+	# As of lesson 2.2 the i-frame flag lives on the hurtbox, not the player.
+	var hurtbox := body.get_node_or_null("Hurtbox")
+	if hurtbox and hurtbox.invulnerable:
 		return
 	print("HIT")

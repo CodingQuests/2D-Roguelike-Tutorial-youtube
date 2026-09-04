@@ -1,114 +1,144 @@
-# Lesson 2.1 — Something that can be hurt
+# Lesson 2.2 — Who checks whom
 
 **Chapter 2 · Make Hitting Something Feel Good · Q2 Combat**
 
-**Ends with:** a test dummy that takes damage, drops to zero, and tells the world
-it died.
+**Ends with:** a hitbox that hurts the dummy and physically cannot hurt the
+player — with no team-check code anywhere.
 
-**Starts from:** `lesson-1.4`.
+**Starts from:** `lesson-2.1`.
 
 ---
 
 ## What this lesson built
 
-`scripts/HealthComponent.gd` — the first **component**. About fifty lines that go
-on the player, every enemy, and every barrel.
+`scripts/HitboxComponent.gd` — deals damage. Completely passive.
+`scripts/HurtboxComponent.gd` — receives damage. The active detector.
 
-`scenes/Dummy.tscn` + `scripts/Dummy.gd` — a temporary thing to hit, dropped into
-`Main.tscn`.
+Plus: the i-frame flag migrates off the player, knockback lands on both bodies,
+and the eight collision layers get named in `project.godot`.
 
-## Why it's a node and not a variable
+## The rule, in one sentence
 
-The obvious move is `var health = 100` on the enemy. Thirty seconds, done. And it
-works completely fine until you have a *second* thing that can be hurt. Then a
-third. Then something that heals. Then a boss with a different max. By the time
-you notice, you've got health logic in five places and they've all drifted
-slightly apart.
+> **The thing that can be hurt does the checking. The thing that hurts you just
+> sits there carrying a number.**
 
-What you want instead is **one small thing that knows a number and how to change
-it**, that everything else in the game talks to. The player has one. The enemy has
-one. The barrel has one. Same script, no copies.
+The obvious question in any collision system is *who checks?* — does the sword
+look for enemies, or do enemies look for swords? Most projects answer **both**,
+usually by accident. Then hits land twice, you fix it with a flag, the flag
+doesn't reset properly, and you're three hours into debugging something that
+should have been a rule.
 
-That's a **component** — a node whose whole job is one capability, that you attach
-to things. It's the pattern the entire rest of this course is built on, and this
-is the first one.
+One direction, always. Commit to it and the question never comes up again — not
+for the sword, not for enemies, not for projectiles, not for the whirlwind in
+chapter 5.
 
-`extends Node`, not `Node2D`. It has no position, it isn't anywhere in the world.
-It's just a fact about its parent.
+Look at `HitboxComponent`: no `_process`, no signals it listens to. It's a label
+with a number on it.
 
-> **The name matters.** Every single thing in this game that can be hurt has a
-> child called `Health`, spelled exactly that way. That consistency is what lets
-> other systems find it without being told where it is.
+## Friendly fire is solved by layers, not by code
 
-## Clamping belongs inside the component
+The tempting fix is a team check — `if target.team != my.team`. **Don't.** Now
+every hitbox needs a team, every hurtbox needs a team, and every new thing you add
+has to remember to set one. One day something won't, and it'll hit you, and there
+will be no error.
 
-A health component that lets you go negative or overheal isn't a health component,
-it's a variable with extra steps. Three guards, all inside:
+The engine already does this for you:
+
+| Bit | Name | Value |
+|---|---|---|
+| 1 | World | 1 |
+| 2 | PlayerBody | 2 |
+| 3 | EnemyBody | 4 |
+| 4 | PlayerHurtbox | 8 |
+| 5 | EnemyHurtbox | 16 |
+| 6 | PlayerHitbox | 32 |
+| 7 | EnemyHitbox / projectiles | 64 |
+| 8 | Pickups | 128 |
+
+| Node | Layer | Mask |
+|---|---|---|
+| Player's Hurtbox | PlayerHurtbox (8) | **EnemyHitbox (64) only** |
+| Player's AttackHitbox | PlayerHitbox (32) | *none — it's passive* |
+| Enemy's Hurtbox | EnemyHurtbox (16) | **PlayerHitbox (32) only** |
+| Enemy's AttackHitbox | EnemyHitbox (64) | *none* |
+
+The player's hurtbox masks bit 7 and **only** bit 7. His own sword is on bit 6. As
+far as the physics engine is concerned those two objects exist in different
+universes. The overlap isn't detected and rejected — **it never happens at all.**
+
+> You're not writing code that decides who to ignore. You're arranging things so
+> the question is never asked.
+
+## Hit once per swing
+
+Hold a hitbox inside a target and it damages once per *frame* — one swing, eleven
+hits. So the hitbox remembers who it's already hit and clears the list when a new
+swing starts.
 
 ```gdscript
-if current_health <= 0.0:
-    return                                   # can't kill something twice
-amount = maxf(0.0, amount)                   # negative damage can't heal you
-current_health = maxf(0.0, current_health - amount)
+if area.has_method("try_register_hit"):
+    if not area.try_register_hit(self):
+        return
 ```
 
-The second one is the bug you get the first time an upgrade multiplies something
-by a negative number.
+The hurtbox still doesn't know what a hitbox *is*. It asks *"do you have this
+method?"* and if so asks permission. That's what keeps them decoupled.
 
-## The signal is the actual lesson
+## The i-frame flag moves — two lines
 
-If the HUD needs to update on damage, the naive fix is to make `HealthComponent`
-know about the HUD. Then the death screen. Then the sound system. Then corruption.
-That's a component that knows about the entire game.
+Chapter 1 put `invulnerable` on the player because there was nothing else to put
+it on. Now there is:
 
-**A signal flips the arrow round.** The component announces *"I took 9 damage, I'm
-on 41 of 100"* and doesn't know or care who's listening. The HUD listens. The
-audio manager listens. Nothing ever has to be wired into this file again.
+```gdscript
+hurtbox.invulnerable = true     # in _start_dash
+hurtbox.invulnerable = false    # in _end_dash
+```
 
-> The component shouts. Other things choose to hear it.
+**This is the arrow from lesson 1.3, pointing the right way.** The dash *sets* it,
+the damage system *reads* it. The dash doesn't know what damage is and the damage
+system doesn't know what a dash is — which is why chapter 5's blink ability grants
+invincibility in one line and touches nothing.
 
-Look at `Dummy.gd`: it contains no health logic at all. It connects one signal and
-calls `queue_free()`.
+`Hazard.gd` was updated to ask the hurtbox too.
 
-## Two methods that exist for later
+## Knockback, and the guard that was waiting for it
 
-`set_max_health(value, keep_ratio)` — chapter 5's Bulwark upgrade raises your
-ceiling and chapter 5's altar **lowers** it. `keep_ratio` is the interesting half:
-raising max HP by 25 while keeping the *ratio* heals you a bit, keeping the
-*absolute* doesn't. Those are different game feelings and the caller should
-choose.
+```gdscript
+if dir.length() < 0.01:
+    dir = Vector2.RIGHT.rotated(randf() * TAU)
+```
 
-`get_ratio()` — because **the HUD needs a fraction, not a number.** A health bar
-doesn't care that you're on 41, it cares that you're at 41%.
+That random fallback is for when something spawns exactly on top of you: direction
+is zero, you can't normalize a zero vector, and you get NaN — **exactly the crash
+the `_finite()` guard in lesson 1.1 was put there to catch.** `_knockback` is now
+a live channel other systems write to; that's the variable it was guarding.
+
+`KNOCKBACK_TAKEN = 0.6` — the player takes about two thirds of the shove an enemy
+would. Hits on *you* still need to register, but being flung across the room every
+time something touches you feels awful.
+
+> The hurtbox asks `has_method("apply_knockback")`, so a body without it doesn't
+> error — **it silently does nothing.** Both bodies have it here.
 
 ## Your turn
 
-Put a `HealthComponent` on the **player**, connect `died`, print something when he
-dies. Same node, same script, different entity, **zero new code** — that's the
-whole argument for building it this way.
-
-*(This branch deliberately leaves the player without one so the exercise is still
-there to do. Lesson 2.2 adds it for real, because the hurtbox needs a sibling
-`Health` to talk to.)*
-
-## The half-answer
-
-*"Why is this a node and not just a variable?"* — you've had half an answer. The
-other half doesn't arrive until chapter 5, when corruption needs a **single** place
-that all incoming damage flows through. Hold that thought.
+Give the **dummy** a `HitboxComponent` so it can hurt the player. Layer 7
+(EnemyHitbox), and **no code changes anywhere.** If you got it working purely by
+ticking boxes in the inspector, you've understood the lesson.
 
 ## If it goes wrong
 
 | Symptom | Cause |
 |---|---|
-| `$Health` is null | Child node isn't named exactly `Health` |
-| `died` fires twice | The `if current_health <= 0.0: return` guard is missing |
-| Signal never fires | You emitted before changing the value, or forgot `.emit()` |
-| `class_name` error | Another script already uses that name — Godot enforces uniqueness |
+| **Nothing is detected at all** | The Area2D has no `CollisionShape2D`. It fails **completely silently** — no error, no warning. Check this first, always |
+| Hurtbox detects nothing | Its **mask** doesn't include the hitbox's **layer**. Layer = what I am, mask = what I look for |
+| Still hitting yourself | Player hurtbox mask includes bit 6. It should only be bit 7 |
+| Damage still stacks | `try_register_hit` isn't wired, or `reset_hits()` is called every frame |
+| `area.damage` errors | The overlapping area isn't a HitboxComponent — the group check is missing |
 
 ## Next
 
 ```bash
-git checkout lesson-2.2   # hitbox, hurtbox, and no friendly-fire code
-git diff lesson-2.1 lesson-2.2
+git checkout lesson-2.3   # the swing — and it's going to feel terrible
+git diff lesson-2.2 lesson-2.3
 ```

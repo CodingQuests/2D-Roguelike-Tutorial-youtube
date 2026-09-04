@@ -1,138 +1,114 @@
-# Lesson 1.4 — A camera that doesn't fight you
+# Lesson 2.1 — Something that can be hurt
 
-**Chapter 1 · Make the Player Worth Controlling · Q1 Controller · chapter closer**
+**Chapter 2 · Make Hitting Something Feel Good · Q2 Combat**
 
-**Ends with:** the whole controller — walk, aim, dash, shake, and a camera that
-leads where you look.
+**Ends with:** a test dummy that takes damage, drops to zero, and tells the world
+it died.
 
-**Starts from:** `lesson-1.3`.
+**Starts from:** `lesson-1.4`.
 
 ---
 
 ## What this lesson built
 
-`scripts/PlayerCamera.gd` — smooth follow, damped aim lead, and trauma shake.
+`scripts/HealthComponent.gd` — the first **component**. About fifty lines that go
+on the player, every enemy, and every barrel.
 
-`Main.tscn` — a `Camera2D` in the room (**not** a child of Player), with
-`target_path` pointing at it.
+`scenes/Dummy.tscn` + `scripts/Dummy.gd` — a temporary thing to hit, dropped into
+`Main.tscn`.
 
-`scripts/PlayerController.gd` — `_update_body_juice()`, the procedural walk/idle
-bob.
+## Why it's a node and not a variable
 
-## A good camera lags on purpose
+The obvious move is `var health = 100` on the enemy. Thirty seconds, done. And it
+works completely fine until you have a *second* thing that can be hurt. Then a
+third. Then something that heals. Then a boss with a different max. By the time
+you notice, you've got health logic in five places and they've all drifted
+slightly apart.
 
-A camera locked exactly to the player is the default, it's one line, and it makes
-people motion sick. The reason: your character stops moving on screen and the
-whole world moves instead — and your eyes read that as *the world being unstable*
-rather than *you being fast*.
+What you want instead is **one small thing that knows a number and how to change
+it**, that everything else in the game talks to. The player has one. The enemy has
+one. The barrel has one. Same script, no copies.
 
-So the camera is always slightly behind, and **that lag is what tells your brain
-the character is the thing moving.**
+That's a **component** — a node whose whole job is one capability, that you attach
+to things. It's the pattern the entire rest of this course is built on, and this
+is the first one.
 
-## The two fixes, both worth more than this lesson
+`extends Node`, not `Node2D`. It has no position, it isn't anywhere in the world.
+It's just a fact about its parent.
 
-**1 · `rate * delta` is not framerate independent.**
+> **The name matters.** Every single thing in this game that can be hurt has a
+> child called `Health`, spelled exactly that way. That consistency is what lets
+> other systems find it without being told where it is.
 
-```gdscript
-# wrong — feels different at 30fps and 144fps
-global_position.lerp(goal, follow_lerp * delta)
+## Clamping belongs inside the component
 
-# right — genuinely framerate independent
-global_position.lerp(goal, 1.0 - exp(-follow_lerp * delta))
-```
-
-It *looks* like it should be independent and isn't: you're applying a percentage
-repeatedly, and the number of times you apply it changes with the framerate. The
-`1 - exp(-rate * delta)` form is used for **every** ease in the rest of this
-course. Write it down once.
-
-**2 · The twitch isn't the follow's fault.**
-
-Add a naive aim lead and flick the mouse — the camera twitches, even though the
-follow is already damped. The mouse doesn't move smoothly; it teleports in
-discrete steps every frame. **The noise is in the target, not in the follow.**
-
-So the answer isn't to damp harder, it's to damp the *target* first and then
-follow the smoothed version of it. Two damped things, one after the other:
+A health component that lets you go negative or overheal isn't a health component,
+it's a variable with extra steps. Three guards, all inside:
 
 ```gdscript
-_lead = _lead.lerp(want_lead, 1.0 - exp(-aim_lead_lerp * delta))
-var goal := _target.global_position + _lead
-global_position = global_position.lerp(goal, 1.0 - exp(-follow_lerp * delta))
+if current_health <= 0.0:
+    return                                   # can't kill something twice
+amount = maxf(0.0, amount)                   # negative damage can't heal you
+current_health = maxf(0.0, current_health - amount)
 ```
 
-Damp the lead **before** adding it to the goal, not after.
+The second one is the bug you get the first time an upgrade multiplies something
+by a negative number.
 
-## Why trauma is squared
+## The signal is the actual lesson
 
-```gdscript
-var shake := _trauma * _trauma
-```
+If the HUD needs to update on damage, the naive fix is to make `HealthComponent`
+know about the HUD. Then the death screen. Then the sound system. Then corruption.
+That's a component that knows about the entire game.
 
-Trauma of 0.2 squared is 0.04 — barely a wobble. Trauma of 1.0 squared is still
-1.0 — a full kick. The curve is bent, so small hits almost disappear and big hits
-keep everything.
+**A signal flips the arrow round.** The component announces *"I took 9 damage, I'm
+on 41 of 100"* and doesn't know or care who's listening. The HUD listens. The
+audio manager listens. Nothing ever has to be wired into this file again.
 
-**That one character is what makes a heavy attack feel heavier than a light one.**
-Without it you get one shake at two volumes and every hit in the game feels the
-same size.
+> The component shouts. Other things choose to hear it.
 
-And `max_roll_degrees = 4`. Try 12 — it reads as a bug, not as impact. Above about
-six degrees people think something's broken.
+Look at `Dummy.gd`: it contains no health logic at all. It connects one signal and
+calls `queue_free()`.
 
-## Two lines that stop a bug you'd stop seeing
+## Two methods that exist for later
 
-The snap to the target in `_ready()`. Without it, every single time you press play
-the camera swoops in from wherever you left it in the editor. It looks like an
-intro animation you didn't ask for, and it's the kind of bug you stop *seeing*
-after a week because you assume it's normal.
+`set_max_health(value, keep_ratio)` — chapter 5's Bulwark upgrade raises your
+ceiling and chapter 5's altar **lowers** it. `keep_ratio` is the interesting half:
+raising max HP by 25 while keeping the *ratio* heals you a bit, keeping the
+*absolute* doesn't. Those are different game feelings and the caller should
+choose.
 
-## The bob is a `sin()`, not a tween
+`get_ratio()` — because **the HUD needs a fraction, not a number.** A health bar
+doesn't care that you're on 41, it cares that you're at 41%.
 
-```gdscript
-_bob_time += delta * freq
-sprite.position.y = sin(_bob_time) * amp
-```
+## Your turn
 
-The obvious way to do idle motion is `create_tween().set_loops()`. Do that and you
-get *"N ObjectDB instances leaked at exit"* in your console when you quit.
-**Procedural bobbing can't leak.**
+Put a `HealthComponent` on the **player**, connect `died`, print something when he
+dies. Same node, same script, different entity, **zero new code** — that's the
+whole argument for building it this way.
 
-## Your turn — chapter closer
+*(This branch deliberately leaves the player without one so the exercise is still
+there to do. Lesson 2.2 adds it for real, because the hurtbox needs a sibling
+`Health` to talk to.)*
 
-Make the movement feel **heavier** — like he's wearing armour — **without making
-him slower.** A room crossing should still take about a second, but starting and
-stopping should cost something.
+## The half-answer
 
-There's no single right answer, which is the point. One answer is acceleration:
-instead of setting velocity directly, move it toward the target with
-`move_toward()`, so he ramps up and coasts down — top speed identical, weight
-completely different. But you might do it with the bob, or a squash when he plants
-his feet, or a tiny delay before the dash fires. **All of those are correct. If
-yours felt heavy, yours worked.**
+*"Why is this a node and not just a variable?"* — you've had half an answer. The
+other half doesn't arrive until chapter 5, when corruption needs a **single** place
+that all incoming damage flows through. Hold that thought.
 
 ## If it goes wrong
 
 | Symptom | Cause |
 |---|---|
-| Camera swoops in from the corner every run | The `_ready` snap to target is missing |
-| Camera doesn't move at all | `target_path` not set, or `make_current()` missing |
-| Still twitchy | You damped the lead **after** adding it to the goal instead of before |
-| Shake never stops | `trauma_decay` is 0, or you're adding trauma every frame |
-| "N ObjectDB instances leaked at exit" | A looping tween somewhere. The bob must be `sin()` |
-| Camera rotates and never returns | The `else` branch isn't resetting `rotation_degrees` |
-
-## That's chapter 1
-
-He moves, he aims, he dashes, and he's invincible for a fourteenth of a second
-while he does it. None of it is a feature you can put on a box — it's the
-difference between a project and a game.
+| `$Health` is null | Child node isn't named exactly `Health` |
+| `died` fires twice | The `if current_health <= 0.0: return` guard is missing |
+| Signal never fires | You emitted before changing the value, or forgot `.emit()` |
+| `class_name` error | Another script already uses that name — Godot enforces uniqueness |
 
 ## Next
 
 ```bash
-git checkout lesson-2.1   # something that can be hurt
+git checkout lesson-2.2   # hitbox, hurtbox, and no friendly-fire code
+git diff lesson-2.1 lesson-2.2
 ```
-
-Chapter 2 gives him something to hit — and the first hit is going to feel like
-absolutely nothing, on purpose, so you can hear the difference when it's fixed.

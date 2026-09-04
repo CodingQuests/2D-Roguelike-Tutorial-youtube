@@ -1,112 +1,138 @@
-# Lesson 1.3 — The frames that make a dodge work
+# Lesson 1.4 — A camera that doesn't fight you
 
-**Chapter 1 · Make the Player Worth Controlling · Q1 Controller**
+**Chapter 1 · Make the Player Worth Controlling · Q1 Controller · chapter closer**
 
-**Ends with:** the knight glowing blue and passing straight through a hazard.
+**Ends with:** the whole controller — walk, aim, dash, shake, and a camera that
+leads where you look.
 
-**Starts from:** `lesson-1.2`.
+**Starts from:** `lesson-1.3`.
 
 ---
 
 ## What this lesson built
 
-`scripts/PlayerController.gd` — an `invulnerable` flag, set and cleared by the
-dash, plus the blue tint that makes it visible.
+`scripts/PlayerCamera.gd` — smooth follow, damped aim lead, and trauma shake.
 
-`scenes/Hazard.tscn` + `scripts/Hazard.gd` — **a deliberate throwaway.** Sitting
-in the gap between the two pillars in `Main.tscn`.
+`Main.tscn` — a `Camera2D` in the room (**not** a child of Player), with
+`target_path` pointing at it.
 
-## The animation is not the dodge
+`scripts/PlayerController.gd` — `_update_body_juice()`, the procedural walk/idle
+bob.
 
-Ask most people what makes a dodge feel good and they'll say the animation — the
-roll, the puff of dust, the way the character tucks in. It isn't. You can put the
-best dodge animation in the world on a character and have it feel awful, because
-the animation is what the dodge **looks** like and has nothing to do with what the
-dodge **does**.
+## A good camera lags on purpose
 
-What it does is a **window of time where damage doesn't apply to you**. The dash
-and that window are two separate things, and how they line up is the entire feel:
+A camera locked exactly to the player is the default, it's one line, and it makes
+people motion sick. The reason: your character stops moving on screen and the
+whole world moves instead — and your eyes read that as *the world being unstable*
+rather than *you being fast*.
 
-- Window **shorter** than the animation → you get hit while visibly dodging, and
-  it feels broken.
-- Window **much longer** → you're invincible for free and the game stops being
-  tense.
-- Window that starts **before** the animation reads as started → sounds like
-  cheating, and is what almost every game you've enjoyed does.
+So the camera is always slightly behind, and **that lag is what tells your brain
+the character is the thing moving.**
 
-## Build the cheapest thing that proves it
+## The two fixes, both worth more than this lesson
 
-`Hazard.gd` prints `"HIT"`. That's the whole implementation, and it's on purpose:
-
-> You cannot test invincibility without something to be invincible *from*, and
-> waiting until the real damage system exists would mean writing the i-frames
-> blind. **Build the cheapest possible thing that lets you see whether the real
-> thing works.**
-
-Keep it after this lesson — disable it, don't delete it. It's your i-frame
-visualiser for the rest of chapter 1.
-
-## An invisible rule is an unfair rule
-
-The i-frames work at the end of the first build — and you can't see them. Dash
-past the hazard three times at different timings and try to call which one was
-invincible. You can't.
-
-That's not a design opinion, it's mechanical. A player learns your game by forming
-a theory, testing it, and getting feedback. **If the invincible window can't be
-seen, there's nothing to form a theory about** — a dodge they can't see is
-indistinguishable from luck. They'll either never trust it, or trust it at the
-wrong moment and feel cheated.
-
-The fix is one line:
+**1 · `rate * delta` is not framerate independent.**
 
 ```gdscript
-sprite.modulate = Color(0.7, 0.9, 1.0)
+# wrong — feels different at 30fps and 144fps
+global_position.lerp(goal, follow_lerp * delta)
+
+# right — genuinely framerate independent
+global_position.lerp(goal, 1.0 - exp(-follow_lerp * delta))
 ```
 
-The specific colour matters far less than that it's **obviously not his normal
-colour**. This is a feedback element, not an art element — it has to be readable
-at a glance, in a dark room, while the screen is shaking. **Tasteful loses to
-legible every single time in a fight.**
+It *looks* like it should be independent and isn't: you're applying a percentage
+repeatedly, and the number of times you apply it changes with the framerate. The
+`1 - exp(-rate * delta)` form is used for **every** ease in the rest of this
+course. Write it down once.
 
-## Which way the arrow points
+**2 · The twitch isn't the follow's fault.**
 
-Right now `invulnerable` lives on the player, because there's literally nothing
-else to put it on yet. **It moves in chapter 2** — when the thing that actually
-receives damage exists, the flag goes and lives there and the dash sets it from
-here. One line changes.
+Add a naive aim lead and flick the mouse — the camera twitches, even though the
+follow is already damped. The mouse doesn't move smoothly; it teleports in
+discrete steps every frame. **The noise is in the target, not in the follow.**
 
-The principle is the part to hold on to: **the dash drives it, and the damage
-system reads it.** Never the other way round. Get that arrow backwards and every
-future ability that grants invincibility has to go and edit the damage system.
-This way each one just flips a flag that already exists.
+So the answer isn't to damp harder, it's to damp the *target* first and then
+follow the smoothed version of it. Two damped things, one after the other:
 
-> In the finished game this is `hurtbox.invulnerable`, an `@export` on
-> `HurtboxComponent`. Lesson 2.2 does that migration explicitly.
+```gdscript
+_lead = _lead.lerp(want_lead, 1.0 - exp(-aim_lead_lerp * delta))
+var goal := _target.global_position + _lead
+global_position = global_position.lerp(goal, 1.0 - exp(-follow_lerp * delta))
+```
 
-## Your turn
+Damp the lead **before** adding it to the goal, not after.
 
-Make the invulnerable window **longer than the dash** — set it early in
-`_start_dash` and clear it a beat after `_end_dash` instead of during it. Play for
-a minute.
+## Why trauma is squared
 
-It gets easier *and* it feels worse, and those two things happening together is
-the thing worth noticing. A dodge that always works isn't a dodge, it's a movement
-button — you stop reading the enemy and start mashing. **The window has to be
-tight enough to miss.**
+```gdscript
+var shake := _trauma * _trauma
+```
+
+Trauma of 0.2 squared is 0.04 — barely a wobble. Trauma of 1.0 squared is still
+1.0 — a full kick. The curve is bent, so small hits almost disappear and big hits
+keep everything.
+
+**That one character is what makes a heavy attack feel heavier than a light one.**
+Without it you get one shake at two volumes and every hit in the game feels the
+same size.
+
+And `max_roll_degrees = 4`. Try 12 — it reads as a bug, not as impact. Above about
+six degrees people think something's broken.
+
+## Two lines that stop a bug you'd stop seeing
+
+The snap to the target in `_ready()`. Without it, every single time you press play
+the camera swoops in from wherever you left it in the editor. It looks like an
+intro animation you didn't ask for, and it's the kind of bug you stop *seeing*
+after a week because you assume it's normal.
+
+## The bob is a `sin()`, not a tween
+
+```gdscript
+_bob_time += delta * freq
+sprite.position.y = sin(_bob_time) * amp
+```
+
+The obvious way to do idle motion is `create_tween().set_loops()`. Do that and you
+get *"N ObjectDB instances leaked at exit"* in your console when you quit.
+**Procedural bobbing can't leak.**
+
+## Your turn — chapter closer
+
+Make the movement feel **heavier** — like he's wearing armour — **without making
+him slower.** A room crossing should still take about a second, but starting and
+stopping should cost something.
+
+There's no single right answer, which is the point. One answer is acceleration:
+instead of setting velocity directly, move it toward the target with
+`move_toward()`, so he ramps up and coasts down — top speed identical, weight
+completely different. But you might do it with the bob, or a squash when he plants
+his feet, or a tiny delay before the dash fires. **All of those are correct. If
+yours felt heavy, yours worked.**
 
 ## If it goes wrong
 
 | Symptom | Cause |
 |---|---|
-| `HIT` prints even while dashing | `body is PlayerController` failing — check `class_name PlayerController` is at the top |
-| Hazard never fires at all | The `Area2D` has no `CollisionShape2D`. It fails silently — you'll meet this properly in chapter 2 |
-| Tint never clears | An early `return` is skipping `_end_dash()` |
-| Tint flickers | You're setting `modulate` every frame somewhere in `_physics_process` |
+| Camera swoops in from the corner every run | The `_ready` snap to target is missing |
+| Camera doesn't move at all | `target_path` not set, or `make_current()` missing |
+| Still twitchy | You damped the lead **after** adding it to the goal instead of before |
+| Shake never stops | `trauma_decay` is 0, or you're adding trauma every frame |
+| "N ObjectDB instances leaked at exit" | A looping tween somewhere. The bob must be `sin()` |
+| Camera rotates and never returns | The `else` branch isn't resetting `rotation_degrees` |
+
+## That's chapter 1
+
+He moves, he aims, he dashes, and he's invincible for a fourteenth of a second
+while he does it. None of it is a feature you can put on a box — it's the
+difference between a project and a game.
 
 ## Next
 
 ```bash
-git checkout lesson-1.4   # the camera, and the chapter 1 payoff
-git diff lesson-1.3 lesson-1.4
+git checkout lesson-2.1   # something that can be hurt
 ```
+
+Chapter 2 gives him something to hit — and the first hit is going to feel like
+absolutely nothing, on purpose, so you can hear the difference when it's fixed.

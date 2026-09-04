@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://dq02w2nn6seol"]
+[gd_scene load_steps=7 format=3 uid="uid://dq02w2nn6seol"]
 
 [ext_resource type="PackedScene" uid="uid://c7ejb3eny0vwt" path="res://scenes/Player.tscn" id="1"]
 [ext_resource type="PackedScene" uid="uid://bqh3f0xk1lz2v" path="res://scenes/Hazard.tscn" id="2"]
+[ext_resource type="Script" uid="uid://bsek253lnw7vd" path="res://scripts/PlayerCamera.gd" id="3"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall_h"]
 size = Vector2(704, 32)
@@ -105,3 +106,8 @@ position = Vector2(320, 180)
 
 [node name="Player" parent="." instance=ExtResource("1")]
 position = Vector2(320, 300)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(2, 2)
+script = ExtResource("3")
+target_path = NodePath("../Player")

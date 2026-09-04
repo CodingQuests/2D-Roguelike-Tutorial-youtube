@@ -1,122 +1,112 @@
-# Lesson 1.2 — The dash
+# Lesson 1.3 — The frames that make a dodge work
 
 **Chapter 1 · Make the Player Worth Controlling · Q1 Controller**
 
-**Ends with:** one dash, then a wait. Spacing is a decision again.
+**Ends with:** the knight glowing blue and passing straight through a hazard.
 
-**Starts from:** `lesson-1.1`.
+**Starts from:** `lesson-1.2`.
 
 ---
 
 ## What this lesson built
 
-`scripts/PlayerController.gd` — `_update_dash()`, `_start_dash()`, `_end_dash()`
-and `get_dash_ratio()`, plus three new exports.
+`scripts/PlayerController.gd` — an `invulnerable` flag, set and cleared by the
+dash, plus the blue tint that makes it visible.
 
-`Main.tscn` — two pillars with a gap, so there's something to dash *between*.
+`scenes/Hazard.tscn` + `scripts/Hazard.gd` — **a deliberate throwaway.** Sitting
+in the gap between the two pillars in `Main.tscn`.
 
-## A dash is a state, not a speed
+## The animation is not the dodge
 
-Everybody's first dash is a speed boost: hold a key, go faster, let go, stop. It
-feels like nothing, because it *is* the walk with a number changed.
+Ask most people what makes a dodge feel good and they'll say the animation — the
+roll, the puff of dust, the way the character tucks in. It isn't. You can put the
+best dodge animation in the world on a character and have it feel awful, because
+the animation is what the dodge **looks** like and has nothing to do with what the
+dodge **does**.
 
-The thing that makes a dash a dash is that **while it's happening, normal
-movement doesn't run at all.** It replaces your input rather than being added to
-it:
+What it does is a **window of time where damage doesn't apply to you**. The dash
+and that window are two separate things, and how they line up is the entire feel:
 
-```gdscript
-if _is_dashing:
-    velocity = _dash_dir * dash_speed
-else:
-    velocity = _get_move_input() * move_speed
-```
+- Window **shorter** than the animation → you get hit while visibly dodging, and
+  it feels broken.
+- Window **much longer** → you're invincible for free and the game stops being
+  tense.
+- Window that starts **before** the animation reads as started → sounds like
+  cheating, and is what almost every game you've enjoyed does.
 
-Which means a dash is a **state** — something you're in, that starts, lasts a
-fixed time, and ends. Not a modifier on your speed.
+## Build the cheapest thing that proves it
 
-`dash_speed = 520` is about three times walking speed, and **the ratio matters
-more than the number.** If a dash is only slightly faster than a walk, your brain
-reads it as walking and the whole thing is wasted. You're not picking a speed,
-you're picking a multiple.
+`Hazard.gd` prints `"HIT"`. That's the whole implementation, and it's on purpose:
 
-## The early return
+> You cannot test invincibility without something to be invincible *from*, and
+> waiting until the real damage system exists would mean writing the i-frames
+> blind. **Build the cheapest possible thing that lets you see whether the real
+> thing works.**
 
-```gdscript
-if _is_dashing:
-    _dash_timer -= delta
-    if _dash_timer <= 0.0:
-        _end_dash()
-    return
-```
+Keep it after this lesson — disable it, don't delete it. It's your i-frame
+visualiser for the rest of chapter 1.
 
-While you're dashing, nothing else in `_update_dash` runs — so you can't start a
-dash while you're already dashing.
+## An invisible rule is an unfair rule
 
-## The fallback nobody adds
+The i-frames work at the end of the first build — and you can't see them. Dash
+past the hazard three times at different timings and try to call which one was
+invincible. You can't.
 
-If he's standing still there's no input direction, so `_start_dash()` falls back
-to the **mouse** direction. Without it, standing still and pressing dash does
-literally nothing — and the player doesn't conclude *"I had no direction"*, they
-conclude **the button is broken**. Any input that can silently do nothing needs a
-fallback.
+That's not a design opinion, it's mechanical. A player learns your game by forming
+a theory, testing it, and getting feedback. **If the invincible window can't be
+seen, there's nothing to form a theory about** — a dodge they can't see is
+indistinguishable from luck. They'll either never trust it, or trust it at the
+wrong moment and feel cheated.
 
-## A resource that costs nothing isn't a resource
-
-Mash the dash key without a cooldown and you fly across the room. The dash stops
-being an escape and just becomes how you move — so why would you ever walk?
-
-Every ability in every game you've liked has a cost: a cooldown, a charge, a
-resource bar, a windup. **The cost is what turns using it into a decision, and the
-decision is the fun part.** Take away the cost and you don't get a more powerful
-ability, you get a less interesting game.
-
-`dash_cooldown = 0.6` — long enough that you can't chain them across a room,
-short enough that it doesn't feel like a punishment.
-
-> **A mistake worth stealing:** that cooldown was tuned in an empty room. Dashed
-> around, felt good, moved on — and it was wrong the day enemies existed, because
-> a dash cooldown isn't a movement number, it's a **combat** number. It decides
-> how often you get to escape, and there was nothing to escape from when it was
-> set. Tune anything defensive against the thing it defends you from.
-
-## Why `get_dash_ratio()` returns a float
+The fix is one line:
 
 ```gdscript
-## 1.0 = ready, 0.0 = just used.
-func get_dash_ratio() -> float:
+sprite.modulate = Color(0.7, 0.9, 1.0)
 ```
 
-This is a **float, not a `Timer` node**, and it's deliberate. The cooldown bar on
-the HUD in chapter 6 needs a *fraction* — 0 to 1. That's one division off a float
-and genuinely awkward off a Timer. Build this with a Timer today and you'll be
-rewriting it three chapters from now.
+The specific colour matters far less than that it's **obviously not his normal
+colour**. This is a feedback element, not an art element — it has to be readable
+at a glance, in a dark room, while the screen is shaking. **Tasteful loses to
+legible every single time in a fight.**
 
-That's the shape of a lot of decisions in this course: not *"what works now"* but
-**"what does the thing that consumes this need later."**
+## Which way the arrow points
+
+Right now `invulnerable` lives on the player, because there's literally nothing
+else to put it on yet. **It moves in chapter 2** — when the thing that actually
+receives damage exists, the flag goes and lives there and the dash sets it from
+here. One line changes.
+
+The principle is the part to hold on to: **the dash drives it, and the damage
+system reads it.** Never the other way round. Get that arrow backwards and every
+future ability that grants invincibility has to go and edit the damage system.
+This way each one just flips a flag that already exists.
+
+> In the finished game this is `hurtbox.invulnerable`, an `@export` on
+> `HurtboxComponent`. Lesson 2.2 does that migration explicitly.
 
 ## Your turn
 
-Set `dash_cooldown` to `0` and play for thirty seconds. Then set it to `2` and
-play again. One of those versions will make you stop walking entirely — work out
-which, and why.
+Make the invulnerable window **longer than the dash** — set it early in
+`_start_dash` and clear it a beat after `_end_dash` instead of during it. Play for
+a minute.
 
-At 0 it becomes your movement and the walk is dead. At 2 it's a panic button you
-hoard and never use. **One of those is a movement ability and one is an escape
-ability, and you have to decide which your game wants before you pick the
-number.** This one is an escape, so it sits nearer the slow end.
+It gets easier *and* it feels worse, and those two things happening together is
+the thing worth noticing. A dodge that always works isn't a dodge, it's a movement
+button — you stop reading the enemy and start mashing. **The window has to be
+tight enough to miss.**
 
 ## If it goes wrong
 
 | Symptom | Cause |
 |---|---|
-| Dash does nothing when standing still | The mouse fallback in `_start_dash` is missing |
-| He dashes forever | `_dash_timer` isn't counting down — check `delta` reaches `_update_dash` |
-| Can dash mid-dash | The `return` after the `_is_dashing` block is missing |
-| Dash direction snaps to a cardinal | You're using raw input rather than `.normalized()` |
+| `HIT` prints even while dashing | `body is PlayerController` failing — check `class_name PlayerController` is at the top |
+| Hazard never fires at all | The `Area2D` has no `CollisionShape2D`. It fails silently — you'll meet this properly in chapter 2 |
+| Tint never clears | An early `return` is skipping `_end_dash()` |
+| Tint flickers | You're setting `modulate` every frame somewhere in `_physics_process` |
 
 ## Next
 
 ```bash
-git checkout lesson-1.3   # i-frames, and making them visible
-git diff lesson-1.2 lesson-1.3
+git checkout lesson-1.4   # the camera, and the chapter 1 payoff
+git diff lesson-1.3 lesson-1.4
 ```

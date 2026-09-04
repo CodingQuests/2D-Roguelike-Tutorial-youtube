@@ -20,6 +20,11 @@ var _dash_timer := 0.0
 var _dash_cd_timer := 0.0
 var _dash_dir := Vector2.RIGHT
 
+## True while the dash is active. Chapter 2's damage system reads this;
+## invulnerability is a controller concept, not a damage concept. The dash
+## drives it and the damage system reads it — never the other way round.
+var invulnerable := false
+
 
 func _ready() -> void:
 	_last_good_pos = global_position
@@ -101,10 +106,16 @@ func _start_dash() -> void:
 	_is_dashing = true
 	_dash_timer = dash_duration
 	_dash_cd_timer = dash_cooldown
+	invulnerable = true
+	# The tell. An invisible rule is an unfair rule — if the player can't see
+	# when they were safe, they can't learn to be safe on purpose.
+	sprite.modulate = Color(0.7, 0.9, 1.0)
 
 
 func _end_dash() -> void:
 	_is_dashing = false
+	invulnerable = false
+	sprite.modulate = Color.WHITE
 
 
 ## 1.0 = ready, 0.0 = just used. A float, not a Timer — the HUD needs a

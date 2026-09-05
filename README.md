@@ -17,8 +17,8 @@ fight a boss at the bottom of every floor.
 project exactly as it stands at the *end* of that lesson.
 
 ```bash
-git clone https://github.com/CodingQuests/the-last-forge.git
-cd the-last-forge
+git clone https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube.git
+cd 2D-Roguelike-Tutorial-youtube
 git checkout lesson-1.2     # the project as it is when lesson 1.2 ends
 ```
 

@@ -42,7 +42,7 @@ up if you got lost partway through a video.
 
 ---
 
-## The 28 lessons
+## The 29 lessons
 
 ### Chapter 0 — The Plan
 | Branch | Lesson | Ends with |
@@ -62,8 +62,9 @@ up if you got lost partway through a video.
 |---|---|---|
 | 🟢 `lesson-2.1` | Something that can be hurt | A dummy takes damage and dies |
 | 🟢 `lesson-2.2` | Who checks whom | Hitbox/hurtbox, and no friendly-fire code |
-| 🟡 `lesson-2.3` | The swing | It swings, and it feels like nothing |
-| 🟡 `lesson-2.4` | Make the hit land | The same swing, before and after seven layers |
+| 🟡 `lesson-2.3` | Three bugs and no errors | Every swing lands, the shove is visible, no scaffolding left |
+| 🟡 `lesson-2.4` | The swing | It swings, and it feels like nothing |
+| 🟡 `lesson-2.5` | Make the hit land | The same swing, before and after seven layers |
 
 ### Chapter 3 — Make One Room Worth Fighting In
 | Branch | Lesson | Ends with |

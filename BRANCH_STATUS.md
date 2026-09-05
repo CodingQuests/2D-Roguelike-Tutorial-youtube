@@ -1,6 +1,6 @@
 # Branch status
 
-All 28 lesson branches exist. They are **not all at the same fidelity yet**, and
+All 29 lesson branches exist. They are **not all at the same fidelity yet**, and
 this file says exactly which is which so nobody is misled.
 
 There are two states a lesson branch can be in.
@@ -32,8 +32,9 @@ broken intermediate that won't open.
 | `lesson-1.4` | A camera that doesn't fight you | 🟢 Sliced |
 | `lesson-2.1` | Something that can be hurt | 🟢 Sliced |
 | `lesson-2.2` | Who checks whom | 🟢 Sliced |
-| `lesson-2.3` | The swing | 🟡 Pending |
-| `lesson-2.4` | Make the hit land | 🟡 Pending |
+| `lesson-2.3` | Three bugs and no errors | 🟡 Pending |
+| `lesson-2.4` | The swing | 🟡 Pending |
+| `lesson-2.5` | Make the hit land | 🟡 Pending |
 | `lesson-3.1` | One enemy, off one script | 🟡 Pending |
 | `lesson-3.2` | Telegraphs | 🟡 Pending |
 | `lesson-3.3` | Four enemies from the same base | 🟡 Pending |
@@ -54,7 +55,7 @@ broken intermediate that won't open.
 | `lesson-7.2` | Sound is half the game | 🟡 Pending |
 | `lesson-7.3` | The polish pass, and shipping it | 🟢 Final — *is* `main` |
 
-**7 sliced · 20 pending · 1 final.**
+**7 sliced · 21 pending · 1 final.**
 
 ---
 
@@ -72,7 +73,7 @@ those states means deciding a hundred small things the scripts don't pin down �
 and every one of those decisions is a chance for the repo to disagree with the
 video.
 
-There's a second reason, and it's the stronger one: **25 of the 28 lessons haven't
+There's a second reason, and it's the stronger one: **most of the 29 lessons haven't
 been recorded yet.** The code that ends up on screen is the code that should end up
 on the branch. Cutting the slice at record time costs nothing extra and is exact by
 construction; cutting it now guarantees drift.

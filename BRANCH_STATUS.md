@@ -130,17 +130,28 @@ Things the lesson scripts didn't pin down, decided one way on the sliced branche
   branches. They aren't in the finished game. Lesson 1.3 explicitly says to keep the
   hazard and disable it rather than delete it.
 
-## Not verified in-engine
+## Verified in-engine
 
-**Godot isn't installed on the machine these branches were built on**, so none of
-the sliced branches have been opened in the editor or run through
-`godot --headless --path . --import`. They were reconstructed by reading, and the
-GDScript came verbatim from the lesson scripts, but *"it parses and runs"* is
-unproven. Worth doing that pass before the repo goes public:
+Checked against **Godot 4.7.2** on 12 Sep 2026, two ways, because they catch
+different things:
 
 ```bash
-godot --headless --path . --import
-godot --headless --path . res://Main.tscn --quit-after 300
+godot --headless --path . --import        # parse errors
+godot --headless --path . --quit-after 120  # scene resolution, runtime, leaks
 ```
 
-on each 🟢 branch, grepping stderr for `error|warning|invalid|leaked`.
+`--import` alone is not enough: it never loads a scene, so it misses broken
+resource references entirely. That is how four branches shipped with fabricated
+`uid://` values that warned on every open.
+
+| Branch | Result |
+|---|---|
+| `lesson-0.1` | imports clean (no main scene by design, so nothing to run) |
+| `lesson-1.1` - `lesson-2.2` | **clean** - scene loads, 120 frames, no errors |
+| `main` | imports clean; see the known leak below |
+
+**Known defect on `main`:** `AudioManager`'s music player is never released at
+shutdown, so `TitleScreen.tscn` and `Main.tscn` both report *2 ObjectDB
+instances leaked at exit* (`AudioStreamWAV` + `AudioStreamPlaybackWAV` holding
+`music_calm.wav`). It is not the looping-tween trap the course warns about -
+there is no `set_loops` anywhere in the project.

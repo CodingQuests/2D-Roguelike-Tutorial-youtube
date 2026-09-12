@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://ck8j2mhx0wp3q"]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/Dummy.gd" id="1"]
 [ext_resource type="Script" uid="uid://dcs2pc48scnwf" path="res://scripts/HealthComponent.gd" id="2"]

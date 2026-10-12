@@ -28,7 +28,7 @@ func _ready() -> void:
 	
 	if _target and is_instance_valid(_target):
 		global_position = _target.global_position
-	
+	GameManager.register_camera(self)
 func _process(delta: float) -> void:
 	
 	_time += delta

@@ -23,7 +23,7 @@ collision_layer = 2
 collision_mask = 5
 script = ExtResource("1_cvnsp")
 
-[node name="Tile0096" type="Sprite2D" parent="." unique_id=338408973]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=338408973]
 texture = ExtResource("1_v0iea")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=799253660]

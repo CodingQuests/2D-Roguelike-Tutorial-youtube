@@ -16,7 +16,11 @@ var _player: Node = null
 const SWORD := 0
 const SPEAR := 1
 const DAGGERS := 2
-
+const QUICK_HITSTOP := 0.04
+const QUICK_SHAKE := 0.12
+const HEAVY_HITSTOP := 0.07
+const HEAVY_SHAKE := 0.5
+var _base_weapon_scale := Vector2.ONE
 const PROFILES := [
 	{
 		"name": "Corrupted Cleaver",
@@ -42,6 +46,8 @@ const PROFILES := [
 ]
 var available_weapons: Array = [SWORD, SPEAR]
 var _slot: int = 0
+
+var _base_weapon_rotation := 0.0
 func _profile() -> Dictionary:
 	return PROFILES[available_weapons[_slot]]
 	
@@ -50,10 +56,12 @@ func swap() -> void:
 		return
 	_slot = (_slot + 1) % available_weapons.size()
 func _ready() -> void:
+	_base_weapon_scale = weapon_sprite.scale
 	_player = get_parent()
 	_disable_hitbox()
 	attack_hitbox.source_node = _player
-	
+	attack_hitbox.hit_landed.connect(_on_hit_landed)
+	_base_weapon_rotation = weapon_sprite.rotation
 func _enable_hitbox() -> void:
 	attack_hitbox.monitoring = false
 	attack_hitbox.set_deferred("monitorable", true)
@@ -112,9 +120,15 @@ func _begin_active() -> void:
 	attack_hitbox.damage = _compute_damage()
 	attack_hitbox.knockback_force = float(p["h_kb"]) if _current_is_heavy else float(p["q_kb"])
 	attack_hitbox.reset_hits()
+	
+	var aim := global_transform.x.normalized()
+	if _player and _player.has_method("lunge"):
+		_player.lunge(aim, 210.0 if _current_is_heavy else 110.0)
+	
+	
 	_enable_hitbox()
-	
-	
+	Juice.squash(weapon_sprite, _base_weapon_scale, 0.2, 0.15)
+	_animate_swing()
 func _begin_recovery() -> void:
 	_disable_hitbox()
 	state = State.RECOVERY
@@ -139,3 +153,24 @@ func _compute_damage() -> float:
 	return float(p["h_dmg"]) if _current_is_heavy else float(p["q_dmg"])
 func _cd_mult() -> float:
 	return 1.0
+func _on_hit_landed(_hurtbox: Node) -> void:
+	AudioManager.play("hit")
+	AudioManager.play("heavy" if _current_is_heavy else "slash")
+	if _current_is_heavy:
+		GameManager.hit_stop(HEAVY_HITSTOP)
+		GameManager.shake_camera(HEAVY_SHAKE)
+	else:
+		GameManager.hit_stop(QUICK_HITSTOP)
+		GameManager.shake_camera(QUICK_SHAKE)
+
+
+func _animate_swing() -> void:
+	var arc := deg_to_rad(120) if _current_is_heavy else deg_to_rad(90)
+	var dur := _state_timer if _current_is_heavy else _state_timer + 0.08
+	weapon_sprite.rotation = _base_weapon_rotation - arc * 0.5
+	var tw := weapon_sprite.create_tween()
+	tw.tween_property(weapon_sprite, "rotation",
+		_base_weapon_rotation + arc * 0.5, dur).set_trans(Tween.TRANS_QUAD)
+	tw.tween_property(weapon_sprite, "rotation", _base_weapon_rotation, 0.1)
+	
+	

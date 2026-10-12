@@ -4,7 +4,7 @@ extends CharacterBody2D
 @onready var hurtbox: HurtboxComponent = $Hurtbox
 @export var move_speed: float = 180.0
 @onready var sprite_2d: Sprite2D = $WeaponPivot/WeaponSprite
-@onready var player_sprite: Sprite2D = $Tile0096
+@onready var player_sprite: Sprite2D = $Sprite2D
 @onready var hitbox: HitboxComponent = $WeaponPivot/AttackHitbox
 @onready var weapon: WeaponController = $WeaponPivot
 
@@ -131,3 +131,7 @@ func _handle_attack_input() -> void:
 	elif Input.is_action_just_pressed("heavy_attack"):
 		weapon.try_heavy_attack()
 	
+func lunge(dir: Vector2, force: float) -> void:
+	if _is_dashing or dir.length() < 0.01:
+		return
+	_knockback = dir.normalized() * force

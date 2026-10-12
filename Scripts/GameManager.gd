@@ -6,6 +6,11 @@ var camera: Camera2D = null
 
 var _hitstop_token := 0
 
+const DEFAULT_RUN_STATS := {
+	"rooms_cleared": 0, "enemies_killed": 0, "essence": 0, "gold": 0,
+	"score": 0, "max_combo": 0, "started_ms": 0, "floor": 1,
+}
+var run_stats := DEFAULT_RUN_STATS.duplicate()
 
 func register_camera(cam: Camera2D) -> void:
 	camera = cam

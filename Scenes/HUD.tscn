@@ -2,8 +2,9 @@
 
 [ext_resource type="Script" uid="uid://bvhih3dhxn6ly" path="res://Scripts/HUD.gd" id="1_psnte"]
 [ext_resource type="Script" uid="uid://k6fjhb67sm07" path="res://Scripts/StatBar.gd" id="1_sd512"]
+[ext_resource type="Script" uid="uid://3bmti3vtok54" path="res://Scripts/Minimap.gd" id="2_jo1ms"]
 
-[node name="CanvasLayer" type="CanvasLayer" unique_id=763541727]
+[node name="HUD" type="CanvasLayer" unique_id=763541727]
 script = ExtResource("1_psnte")
 
 [node name="HealthBar" type="Control" parent="." unique_id=56432768]
@@ -27,3 +28,12 @@ offset_left = 14.0
 offset_top = 111.0
 offset_right = 54.0
 offset_bottom = 134.0
+
+[node name="Minimap" type="Control" parent="." unique_id=1462836531 groups=["Minimap"]]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 952.0
+offset_top = 506.0
+offset_right = 1087.0
+offset_bottom = 620.0
+script = ExtResource("2_jo1ms")

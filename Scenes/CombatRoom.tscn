@@ -28,4 +28,4 @@ target_path = NodePath("../player")
 
 [node name="Pickups" type="Node2D" parent="." unique_id=1956815919 groups=["pickups"]]
 
-[node name="CanvasLayer" parent="." unique_id=763541727 instance=ExtResource("4_qhs6v")]
+[node name="HUD" parent="." unique_id=763541727 instance=ExtResource("4_qhs6v")]

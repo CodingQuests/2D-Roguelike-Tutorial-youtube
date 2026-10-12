@@ -29,7 +29,7 @@ var _props: Node2D
 var _gates: Node2D
 var rooms: Array = []
 var links: Array = []
-
+var _gate_nodes: Dictionary = {}
 var obstacles: Array[Rect2] = []
 
 func _ready() -> void:
@@ -421,3 +421,38 @@ func _blocked(pos: Vector2) -> bool:
 		if rect.grow(10.0).has_point(pos):
 			return true
 	return false
+
+func lock_room(i: int) -> void:
+	if _gate_nodes.has(i):
+		return                       # already locked — never stack gates
+	var gates: Array = []
+	# One box per recorded door cell, so it works for horizontal and vertical
+	# doorways without knowing which it is.
+	for door_cell in rooms[i]["doors"]:
+		var gate := StaticBody2D.new()
+		gate.collision_layer = 1
+		gate.collision_mask = 0
+		var shape := CollisionShape2D.new()
+		var rect := RectangleShape2D.new()
+		rect.size = Vector2(TILE, TILE)
+		shape.shape = rect
+		gate.add_child(shape)
+		var picture := Polygon2D.new()
+		picture.polygon = PackedVector2Array([Vector2(-8,-8), Vector2(8,-8), Vector2(8,8), Vector2(-8,8)])
+		picture.color = Color(0.55, 0.25, 0.12)
+		gate.add_child(picture)
+		gate.position = _cell_center(door_cell)
+		_gates.add_child(gate)
+		gates.append(gate)
+	_gate_nodes[i] = gates
+	if not gates.is_empty():
+		AudioManager.play("door_close", -2.0)
+
+func unlock_room(i: int) -> void:
+	if not _gate_nodes.has(i):
+		return
+	for g in _gate_nodes[i]:
+		if is_instance_valid(g):
+			g.queue_free()
+	_gate_nodes.erase(i)
+	AudioManager.play("door_open", -2.0)

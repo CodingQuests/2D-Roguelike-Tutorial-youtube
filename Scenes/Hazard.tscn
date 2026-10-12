@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://bscw2r0xxsmt1"]
+
+[sub_resource type="GDScript" id="GDScript_hhunp"]
+script/source = "extends Area2D
+## TEMPORARY. A thing that hurts you, so i can prove i-frames work.
+## Do not delete at the end of this lesson — disable it. It becomes the
+## i-frame visualiser later.
+
+func _ready() -> void:
+	body_entered.connect(_on_body_entered)
+
+
+func _on_body_entered(body) -> void:
+	if body is PlayerController and body.invulnerable:
+		return
+	print(\"HIT\")
+"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hhunp"]
+
+[node name="Hazard" type="Area2D" unique_id=460207323]
+collision_layer = 0
+collision_mask = 2
+script = SubResource("GDScript_hhunp")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1908704076]
+shape = SubResource("RectangleShape2D_hhunp")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1152561148]
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0

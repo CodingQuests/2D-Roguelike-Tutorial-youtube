@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://c5n7s4xqgx2x"]
 
 [ext_resource type="PackedScene" uid="uid://ckvu8yjgcr227" path="res://Scenes/player.tscn" id="1_jjgbg"]
+[ext_resource type="PackedScene" uid="uid://bscw2r0xxsmt1" path="res://Scenes/Hazard.tscn" id="3_hazrd"]
 
 [node name="Main" type="Node2D" unique_id=535670457]
 
@@ -11,3 +12,6 @@ dash_cooldown = 2.965
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1987023519]
 position = Vector2(143, 149)
 zoom = Vector2(4, 4)
+
+[node name="Hazard" parent="." unique_id=460207323 instance=ExtResource("3_hazrd")]
+position = Vector2(184, 133)

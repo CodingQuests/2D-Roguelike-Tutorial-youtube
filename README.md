@@ -1,25 +1,29 @@
-# The Last Forge · Lesson 1.2: The dash
+# The Last Forge · Lesson 1.3: The frames that make a dodge work
 
-Chapter 1, Make the Player Worth Controlling. This branch is the project at the **end of lesson 1.2** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
+Chapter 1, Make the Player Worth Controlling. This branch is the project at the **end of lesson 1.3** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
 
-Starting lesson 1.3? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-1.2.zip), unzip it, and open `project.godot` in Godot 4.7.2.
+Starting lesson 1.4? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-1.3.zip), unzip it, and open `project.godot` in Godot 4.7.2.
 
-[← lesson 1.1](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-1.1) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 1.3 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-1.3)
+[← lesson 1.2](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-1.2) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 1.4 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-1.4)
 
-Press Z to dash: a short burst in the direction you're moving (or toward the mouse if you're standing still), then a cooldown before the next one.
+There's a hazard in the room that prints HIT when you walk into it, but not while you're dashing, and the knight and his sword turn pale blue while the dash protects you.
 
 
 ## Files added
-- None
+- `Scenes/Hazard.tscn`: Area2D (no layer, mask 2) with a RectangleShape2D, a white ColorRect and a built-in script that prints HIT unless the body is an invulnerable PlayerController
 
 ## Files changed
-- `Scripts/PlayerController.gd`: `dash_speed` 520, `dash_duration` 0.14, `dash_cooldown` 0.6, the dash state variables, `_start_dash`, `_end_dash`, `_update_dash`, the dash branch in `_physics_process`, and `get_dash_ratio`
-- `Scenes/main.tscn`: the Player in Main has Dash Cooldown set to 2.965 in the Inspector, as at the end of the video (the script's default stays 0.6; click the revert arrow to go back to it)
+- `Scripts/PlayerController.gd`: `class_name PlayerController`, the `invulnerable` flag (on in `_start_dash`, off in `_end_dash`), `player_sprite` for the knight, and the pale blue tint `Color(0.7, 0.9, 1.0)` on both sprites during the dash
+- `Scenes/main.tscn`: a Hazard added to Main
+
+## Good to know
+- HIT appears in the Output panel at the bottom of the editor.
+- The hazard stays in the room for now; lesson 1.4 uses it to test the camera shake.
 
 ## Build this part yourself
 
 The same game is a set of interactive quests on CodingQuests: you write each system yourself and your code gets
-checked. The whole controller quest is free, no account needed: https://codingquests.io/roguelike?utm_source=github&utm_medium=readme&utm_campaign=fcc_2d_roguelike&utm_content=dash
+checked. The whole controller quest is free, no account needed: https://codingquests.io/roguelike?utm_source=github&utm_medium=readme&utm_campaign=fcc_2d_roguelike&utm_content=iframes
 
 ## Requirements
 

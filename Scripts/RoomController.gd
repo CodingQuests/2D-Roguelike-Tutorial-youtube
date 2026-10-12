@@ -11,6 +11,7 @@ const SKITTER_SCENE := preload("res://Scenes/SkitterlingEnemy.tscn")
 
 @onready var player: PlayerController = $player
 @onready var enemies: Node2D = $Enemies
+@onready var floor_layer: Dungeon = $Floor
 
 var _alive: int = 0
 
@@ -18,7 +19,7 @@ func _ready() -> void:
 	randomize()
 	await get_tree().process_frame
 	_start_wave()
-
+	floor_layer.generate()
 
 func _start_wave() -> void:
 	_alive = 0

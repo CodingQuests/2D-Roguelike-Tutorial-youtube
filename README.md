@@ -1,47 +1,31 @@
-# The Last Forge · Lesson 3.6: Debug the game you actually built
+# The Last Forge · Lesson 4.1: A room built in code
 
-Chapter 3, Make One Room Worth Fighting In. This branch is the project at the **end of lesson 3.6** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
+Chapter 4, Turn It Into a Run. This branch is the project at the **end of lesson 4.1** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
 
-Starting lesson 4.1? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-3.6.zip), unzip it, and open `project.godot` in Godot 4.7.2.
+Starting lesson 4.2? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-4.1.zip), unzip it, and open `project.godot` in Godot 4.7.2.
 
-[← lesson 3.5](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-3.5) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 4.1 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-4.1)
+[← lesson 3.6](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-3.6) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 4.2 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-4.2)
 
-The checkpoint. This branch has every card applied, so the room works end to end:
-- The HUD follows your health and dash.
-- Warnings are round or rectangular and match the hits they warn about.
-- Tints and spawn fades show.
-- Overlapping sounds play.
-- Clearing the room shows ROOM CLEARED.
+The combat room now has a real floor. A TileMapLayer called Floor builds its own tileset from the tile sheet, fills a 24 x 14 room with floor cells, derives the walls from those cells, gives every wall tile a 16 x 16 collision box, keeps the tiles under the knight and scatters a few cracked floor tiles.
 
 
 ## Files added
-- None
+- `Scripts/Dungeon.gd` (and its `.uid`): `class_name Dungeon`, a `TileMapLayer`. `_build_tileset()` makes a TileSet from `tilemap_packed.png` with the FLOOR, WALL and three FLOOR_DECO tiles, all at `z_index` -10. `generate()` rebuilds the `Walls` StaticBody2D and fills `Rect2i(0, 0, 24, 14)` with floor cells. `_paint()` paints the floor, then a wall on every one of the 8 neighbours that isn't floor. `_build_wall_collision()` adds one box per wall cell. `_scatter_floor_decor()` swaps 10% of the floor cells for decor tiles.
 
 ## Files changed
-- `Scripts/PlayerController.gd`: adds the `health` reference (card 04). `_physics_process()` returns while time is stopped and updates aim before reading attacks (card 02), and `move_and_slide()` is guarded ("Also guard the actual movement call").
-- `Scripts/EnemyBase.gd`:
-  - `_init_telegraph_textures()` builds a radial circle and a white rectangle once.
-  - The end of `_ready()` saves `_base_sprite_scale`, builds the textures and hides the telegraph (card 08).
-  - Each warning picks its texture, and the circle resets its position.
-  - Adds `show_charge_warning()` (card 09).
-  - `move_and_slide()` is guarded.
-- `Scripts/BossEnemy.gd`: `SLAM_RADIUS` (22) is used for both the slam warning and the hit, and the charge warning covers the path (card 09).
-- `Scripts/ChargerEnemy.gd`: `show_charge_warning(charge_speed * charge_time, 7.0, _charge_dir)` (card 09). The card gives 7.0 as the charger's hitbox radius, so the charge's hit uses 7.0 too (`enable_attack_area(Vector2.ZERO, 7.0)`, was 18.0) and the warning covers the hit.
-- `Scripts/AudioManager.gd`: a pool of 5 voices, a default of -12 dB, and a `room_clear` sound (card 10).
-- `shaders/sprite_fx.gdshader`: passes the vertex tint into `fragment()` (card 07).
-- `Scenes/EnemyBase.tscn`: the enemy body is on layer 3 with mask 1 and 2 (card 06).
-- `Scenes/Projectile.tscn`: the projectile's mask is the world, layer 1 (card 06).
-- `Scenes/HUD.tscn`: `HUD.gd` is attached to the root CanvasLayer (card 04).
+- `Scenes/CombatRoom.tscn`: a new `Floor` TileMapLayer, the last child of CombatRoom, running `Dungeon.gd`. It has no TileSet in the scene; the script builds one.
+- `Scripts/RoomController.gd`: `@onready var floor_layer: Dungeon = $Floor`, and `floor_layer.generate()` at the end of `_ready()`.
 
 ## Good to know
-- Card 01 (scene paths and `$player`) and card 05 (the swapped grunt and caster scripts) need no edit here. Your project got those right in 3.3 and 3.5. Card 03's registrations are already in: the camera since 2.5 and the player and HUD since 3.5.
-- The cards are the source. Where the tested copy used in the demo clips differs and no card shows it, this branch keeps the code from the earlier lessons. For example, the grunt's warning radius and AudioManager's sound lookup are unchanged, and the enemies keep the ranges and hit sizes from lesson 3.3 (the tested copy has smaller ones that the course never shows).
-- Run `CombatRoom.tscn` with F6 to test the room. `main.tscn` (the boss) is still the main scene.
+- Run CombatRoom with F6 (Run Current Scene). The project's main scene is still `main.tscn` until lesson 5.1.
+- The TileMap at the start of the video only shows what the code replaces. It becomes the Floor TileMapLayer in CombatRoom; `main.tscn` doesn't change.
+- The video tries 6% and then 16% decor; the code ends at `0.10`.
+- Known at this point: monsters still come from 3.5's fixed spawn rectangle, which doesn't know about the walls. A monster can appear outside the room, and then that wave can't be finished. From lesson 4.4, each room spawns its own monsters inside it.
 
 ## Build this part yourself
 
 The same game is a set of interactive quests on CodingQuests: you write each system yourself and your code gets
-checked. The whole controller quest is free, no account needed: https://codingquests.io/roguelike?utm_source=github&utm_medium=readme&utm_campaign=fcc_2d_roguelike&utm_content=rooms
+checked. The whole controller quest is free, no account needed: https://codingquests.io/roguelike?utm_source=github&utm_medium=readme&utm_campaign=fcc_2d_roguelike&utm_content=dungeon
 
 ## Requirements
 

@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://c4d1q21xsfec2"]
+
+[ext_resource type="Script" uid="uid://tor8qnrtlnqx" path="res://Scripts/DestructibleProp.gd" id="1_6py48"]
+[ext_resource type="Texture2D" uid="uid://mrjj5tyg5jsn" path="res://Assets/Tiles/tile_0082.png" id="1_mmxct"]
+[ext_resource type="Script" uid="uid://ndidq3dg483g" path="res://Scripts/HealthComponent.gd" id="2_6py48"]
+[ext_resource type="Script" uid="uid://c4fhsoy6b6530" path="res://Scripts/HurtboxComponent.gd" id="3_2ash3"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_fxkq0"]
+size = Vector2(14, 16)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mmxct"]
+size = Vector2(16, 19)
+
+[node name="DestructibleProp" type="StaticBody2D" unique_id=1536481376]
+script = ExtResource("1_6py48")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=609396387]
+texture = ExtResource("1_mmxct")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=70725435]
+shape = SubResource("RectangleShape2D_fxkq0")
+
+[node name="Health" type="Node" parent="." unique_id=803248505]
+script = ExtResource("2_6py48")
+metadata/_custom_type_script = "uid://ndidq3dg483g"
+
+[node name="Hurtbox" type="Area2D" parent="." unique_id=1897502708]
+collision_layer = 16
+collision_mask = 32
+script = ExtResource("3_2ash3")
+metadata/_custom_type_script = "uid://c4fhsoy6b6530"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=929676075]
+position = Vector2(0, 0.5)
+shape = SubResource("RectangleShape2D_mmxct")

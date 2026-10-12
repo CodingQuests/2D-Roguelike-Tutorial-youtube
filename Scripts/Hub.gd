@@ -10,7 +10,8 @@ func _ready() -> void:
 	for id in MetaProgression.COSTS:
 		get_node("Unlocks/" + id).pressed.connect(_on_unlock_pressed.bind(id))
 	# StartRun swaps the scene to Main. Then draw the first state.
-	$StartRun.pressed.connect(func() -> void: get_tree().change_scene_to_file("res://Main.tscn"))
+	$StartRun.pressed.connect(func() -> void:
+		Transitions.change_scene("res://Scenes/CombatRoom.tscn"))
 	_refresh()
 
 func _refresh() -> void:
@@ -28,6 +29,8 @@ func _refresh() -> void:
 
 func _on_unlock_pressed(id: String) -> void:
 	# buy() is true only if it went through. Sound and redraw on a real purchase.
+	if Transitions.is_busy(): 
+		return
 	if MetaProgression.buy(id):
 		AudioManager.play("upgrade")
 		_refresh()

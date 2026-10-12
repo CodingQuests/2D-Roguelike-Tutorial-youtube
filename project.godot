@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="2D Rogulike project tutorial"
-run/main_scene="uid://c0183p8ae0348"
+run/main_scene="uid://c1k2rak1tuljb"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
 
@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 GameManager="*uid://dkxtj58c6om6g"
 AudioManager="*uid://cvus1w2e6yt2d"
 MetaProgression="*uid://bv3b3dea7lx51"
+Transitions="*uid://ppu40r1mbyaw"
 
 [display]
 

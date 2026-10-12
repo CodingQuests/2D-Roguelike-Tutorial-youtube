@@ -14,6 +14,8 @@ const UPGRADE_CARD := preload("res://Scenes/UpgradeCard.tscn")
 @onready var game_over: Control = $GameOver
 @onready var game_over_summary: Label = $GameOver/Summary
 @onready var essence_label: Label = $GameOver/Essence
+@onready var _pause_panel: Control = $PausePanel
+@onready var _codex_panel: Control = $CodexPanel
 
 var _player: PlayerController = null
 var _status_token := 0
@@ -21,6 +23,9 @@ var _upgrade_callback: Callable
 var _time: float = 0.0
 var _game_over: bool = false
 var _leaving: bool = false
+var _codex_open: bool = false
+
+
 func _skip_upgrade() -> void:
 	# The card lambda with no card: same visible guard, hide the panel, then
 	# call the stored callback with an empty dictionary.
@@ -34,25 +39,32 @@ func _unhandled_input(event: InputEvent) -> void:
 	# Tab flips the panel, but not on a key repeat and not while the upgrade
 	# panel is up.
 	if event.is_action_pressed("codex") and not event.is_echo() and not upgrade_panel.visible:
-		var opened = not $CodexPanel.visible
-		# Rebuild the text only on the way open, then pause the tree with it.
-		if opened:
-			_refresh_codex()
-		$CodexPanel.visible = opened
-		get_tree().paused = opened
+		_toggle_codex()
+		get_viewport().set_input_as_handled()
+		return
 		
-		
+	if event.is_action_pressed("ui_cancel"):
+		if _codex_open:
+			_toggle_codex()
+		else:
+			_toggle_pause()
+		get_viewport().set_input_as_handled()
 func _ready() -> void:
 	GameManager.register_hud(self)
 	status_label.visible = false
 	upgrade_panel.visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	$UpgradePanel/Skip.pressed.connect(_skip_upgrade)
-	$CodexPanel/Close.pressed.connect(_close_codex)
+	$CodexPanel/Close.pressed.connect(_toggle_codex)
 	$CodexPanel.visible = false
 	game_over.visible = false
+	_pause_panel.visible = false
+	_codex_panel.visible = false
 	$GameOver/Retry.pressed.connect(_on_retry)
 	$GameOver/Forge.pressed.connect(_on_forge)
+	$PausePanel/VBox/Resume.pressed.connect(_toggle_pause)
+	$PausePanel/VBox/Restart.pressed.connect(_on_restart)
+	$PausePanel/VBox/Title.pressed.connect(_on_title)
 func _process(_delta: float) -> void:
 	if _game_over or _leaving or get_tree().paused:
 		return
@@ -80,6 +92,25 @@ func _process(_delta: float) -> void:
 	else:
 		# Back to zero, or the last red frame stays up after you heal.
 		overload_pulse.color.a = 0.0
+
+func _toggle_pause() -> void:
+	if _game_over or _leaving or Transitions.is_busy() or upgrade_panel.visible:
+		return
+	# Flip the tree's paused state; the panel follows it.
+	var now := not get_tree().paused
+	get_tree().paused = now
+	_pause_panel.visible = now
+	AudioManager.play("click")
+
+func _toggle_codex() -> void:
+	if _game_over or _leaving or Transitions.is_busy() or upgrade_panel.visible or _pause_panel.visible:
+		return
+	_codex_open = not _codex_open
+	# Refresh the build screen only when it's opening.
+	if _codex_open: _refresh_codex()
+	get_tree().paused = _codex_open
+	_codex_panel.visible = _codex_open
+	AudioManager.play("click")
 func show_status(text: String, auto_hide: float = 1.5) -> void:
 	_status_token += 1
 	var token := _status_token
@@ -133,9 +164,6 @@ func _refresh_codex() -> void:
 	$CodexPanel/BuildText.text = "\n".join(lines)
 	
 	
-func _close_codex() -> void:
-	$CodexPanel.visible = false
-	get_tree().paused = false
 
 func _format_time(seconds: float) -> String:
 	var t := int(seconds)
@@ -182,18 +210,11 @@ func show_game_over(immediate_pause: bool = false) -> void:
 		get_tree().paused = true
 		
 func _on_retry() -> void:
-	if _leaving:
+	if _leaving or Transitions.is_busy():
 		return
 	_leaving = true
-	get_tree().paused = false
-	Engine.time_scale = 1.0
-	# Rebuilds the room from the file. That runs RoomController._ready() again,
-	# which calls start_run(), so the reset comes free.
-	var error := get_tree().reload_current_scene()
-	if error != OK:
+	if not await Transitions.reload_scene():
 		_leaving = false
-		get_tree().paused = true
-		push_error("Retry failed: %s" % error_string(error))
 
 
 func _count_up(label: Label, target: int, prefix: String) -> void:
@@ -208,14 +229,23 @@ func _count_up(label: Label, target: int, prefix: String) -> void:
 	)
 
 func _on_forge() -> void:
-	if _leaving:
+	if _leaving or Transitions.is_busy():
 		return
 	_leaving = true
-	get_tree().paused = false
-	Engine.time_scale = 1.0
-	var error := get_tree().change_scene_to_file("res://Hub.tscn")
-	if error != OK:
+	if not await Transitions.change_scene("res://Hub.tscn"):
 		_leaving = false
-		get_tree().paused = true
-		push_error("Forge load failed: %s" % error_string(error))
-	
+func _on_restart() -> void:
+	if _leaving or Transitions.is_busy():
+		return
+	_leaving = true
+	if not await Transitions.reload_scene():
+		_leaving = false
+
+
+func _on_title() -> void:
+	if _leaving or Transitions.is_busy():
+		return
+	_leaving = true
+	if not await Transitions.change_scene("res://Scenes/TitleScreen.tscn"):
+		_leaving = false
+

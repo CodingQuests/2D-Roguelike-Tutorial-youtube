@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://c1k2rak1tuljb"]
+
+[ext_resource type="Script" uid="uid://ckofgrjuk5mni" path="res://Scripts/TitleScreen.gd" id="1_uebgo"]
+
+[node name="TitleScreen" type="Control" unique_id=971478502]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_uebgo")
+
+[node name="Center" type="CenterContainer" parent="." unique_id=2031830108]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Center" unique_id=1932938141]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Center/VBox" unique_id=102621445]
+layout_mode = 2
+text = "THE LAST FORGE"
+
+[node name="StartButton" type="Button" parent="Center/VBox" unique_id=234947685]
+layout_mode = 2
+text = "Start"
+
+[node name="QuitButton" type="Button" parent="Center/VBox" unique_id=188668127]
+layout_mode = 2
+text = "Quit"

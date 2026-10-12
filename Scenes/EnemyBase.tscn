@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://d2yfkgcecgmo0"]
+
+[ext_resource type="Texture2D" uid="uid://mrjj5tyg5jsn" path="res://Assets/Tiles/tile_0082.png" id="1_lol7t"]
+[ext_resource type="Script" uid="uid://dnhq7yn7cfq" path="res://Scripts/EnemyBase.gd" id="1_majfa"]
+[ext_resource type="Script" uid="uid://ndidq3dg483g" path="res://Scripts/HealthComponent.gd" id="2_majfa"]
+[ext_resource type="Script" uid="uid://c4fhsoy6b6530" path="res://Scripts/HurtboxComponent.gd" id="3_0f5a5"]
+[ext_resource type="Script" uid="uid://bodg87p7ovgmm" path="res://Scripts/HitboxComponent.gd" id="4_vfg16"]
+
+[node name="EnemyBase" type="CharacterBody2D" unique_id=522414560 groups=["enemy"]]
+script = ExtResource("1_majfa")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1208173651]
+texture = ExtResource("1_lol7t")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=487717135]
+
+[node name="Health" type="Node" parent="." unique_id=2015383893]
+script = ExtResource("2_majfa")
+metadata/_custom_type_script = "uid://ndidq3dg483g"
+
+[node name="HurtboxComponent" type="Area2D" parent="." unique_id=2072059626]
+collision_layer = 16
+collision_mask = 32
+script = ExtResource("3_0f5a5")
+metadata/_custom_type_script = "uid://c4fhsoy6b6530"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtboxComponent" unique_id=60642843]
+
+[node name="HitboxComponent" type="Area2D" parent="." unique_id=787784906]
+collision_layer = 64
+collision_mask = 0
+script = ExtResource("4_vfg16")
+hit_once_per_attack = false
+metadata/_custom_type_script = "uid://bodg87p7ovgmm"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitboxComponent" unique_id=524290147]
+
+[node name="Telegraph" type="Sprite2D" parent="." unique_id=168883971]
+visible = false

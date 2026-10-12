@@ -1,38 +1,33 @@
-# The Last Forge · Lesson 2.5: Make the hit land
+# The Last Forge · Lesson 3.1: One enemy, off one script
 
-Chapter 2, Make Hitting Something Feel Good. This branch is the project at the **end of lesson 2.5** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
+Chapter 3, Make One Room Worth Fighting In. This branch is the project at the **end of lesson 3.1** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
 
-Starting lesson 3.1? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-2.5.zip), unzip it, and open `project.godot` in Godot 4.7.2.
+Starting lesson 3.2? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-3.1.zip), unzip it, and open `project.godot` in Godot 4.7.2.
 
-[← lesson 2.4](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-2.4) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 3.1 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-3.1)
+[← lesson 2.5](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-2.5) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 3.2 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-3.2)
 
-Every accepted hit now flashes the target white, bursts particles and pops a damage number. A sword hit also plays a sound, freezes the game for a few hundredths of a second and shakes the camera. Attacking lunges you forward, and the sword squashes and swings through an arc.
+The first monster. EnemyBase is a scene and a script that every enemy builds on, and the grunt is the first enemy made from it. It finds you, chases you, swings when you're close, and then needs a moment to recover.
 
 
 ## Files added
-- `Scripts/GameManager.gd` (and its `.uid`), an autoload: `register_camera()`, `shake_camera()`, and `hit_stop()` with a token and a timer that ignores time scale
-- `Scripts/AudioManager.gd` (and its `.uid`), an autoload: one AudioStreamPlayer and named sounds (`slash`, `heavy`, `hit`, `enemy_hurt`, `enemy_death`, `dash`) loaded from `res://Assets/Audio/`; `play(name, volume_db, pitch)`
-- `shaders/sprite_fx.gdshader` (and its `.uid`): flash toward a colour, plus an outline (width, colour, pulse)
-- `Scripts/Juice.gd` (and its `.uid`): `class_name Juice`, `extends RefCounted`; static `make_flash_material()`, `flash()`, `impact()` (a one-shot CPUParticles2D burst), `squash()` (elastic, ease out) and `damage_number()`
+- `Scenes/EnemyBase.tscn`: a duplicate of the dummy. The root `EnemyBase` is in the `enemy` group. It has Sprite2D, CollisionShape2D, Health, HurtboxComponent (layer 5, mask 6) and HitboxComponent (layer 7, no mask, sword sprite removed), plus a hidden, empty `Telegraph` Sprite2D. Its three collision shapes are cleared so each enemy can give its own.
+- `Scripts/EnemyBase.gd` (and its `.uid`): `class_name EnemyBase` with the State enum, exported stats, node references and the `defeated` signal. `_ready()` calls our own `_on_ready()` hook, and `_physics_process()` calls `_ai_process()`. It finds the player through the `player` group, faces it and applies knockback. Also has `apply_knockback()`, `die()`, `player_pos()`, `has_player()`, `dir_to_player()`, `distance_to_player()`, `enable_attack_area()` and `_disable_attack_area()`.
+- `Scenes/GruntEnemy.tscn`: a new inherited scene of EnemyBase, using tile 108 and its own circle shapes.
+- `Scripts/GruntEnemy.gd` (and its `.uid`): `class_name GruntEnemy extends EnemyBase`. Its `_on_ready()` sets health 50, speed 95, damage 12 and knockback 200. The loop is chase, then attack when in range, then recovery and a cooldown.
 
 ## Files changed
-- `project.godot`: autoloads `GameManager` and `AudioManager`
-- `Scripts/PlayerCamera.gd`: `GameManager.register_camera(self)` in `_ready()` (the "Connect the camera too" card)
-- `Scripts/HurtboxComponent.gd`: `flash_color`, `impact_color`, `show_damage_numbers`; finds the parent's `Sprite2D` and gives it the flash material; when it deals damage it flashes, bursts particles and shows the damage number
-- `Scripts/WeaponController.gd`: hit-stop and shake constants; `_on_hit_landed()` (sounds, hit stop, shake) connected to the hitbox's `hit_landed`; the lunge in `_begin_active()`; squash from the saved `_base_weapon_scale`; `_animate_swing()` from the saved `_base_weapon_rotation`
-- `Scripts/PlayerController.gd`: `lunge()`; `player_sprite` points at `$Sprite2D`
-- `Scenes/player.tscn`: the knight's sprite node is renamed `Sprite2D` (the hurtbox looks for that name)
+- `Scenes/player.tscn`: the Player root is in the `player` group.
+- `Scenes/main.tscn`: the dummy and the hazard are gone and the grunt is in. The player node is now called `player`.
 
 ## Good to know
-- Known at this point: AudioManager has a single player, so `play("heavy")` or `play("slash")` right after `play("hit")` replaces the hit sound before you hear it (the course card says so). It's fixed later in the course, when AudioManager gets more players.
-- `print("entered: ", area.name)` from lesson 2.3 is still in the hurtbox, as on screen.
-- The CPUParticles2D scene shown in the video is only a demo and isn't saved.
-- The Your Turn (one more effect) isn't in this branch.
+- Known at this point: knockback stacks on top of the grunt's own velocity, so a hit can send it flying (the video points this out at the end). Lesson 3.3 adds hitstun.
+- `_ready()` calls `_on_ready()` second, before the health and hitbox values are copied, as the video shows from 12:52.
+- `dummy.tscn` and `Hazard.tscn` stay in the project. They're just no longer in `main.tscn`.
 
 ## Build this part yourself
 
 The same game is a set of interactive quests on CodingQuests: you write each system yourself and your code gets
-checked. The whole controller quest is free, no account needed: https://codingquests.io/roguelike?utm_source=github&utm_medium=readme&utm_campaign=fcc_2d_roguelike&utm_content=shake
+checked. The whole controller quest is free, no account needed: https://codingquests.io/roguelike?utm_source=github&utm_medium=readme&utm_campaign=fcc_2d_roguelike&utm_content=enemies
 
 ## Requirements
 

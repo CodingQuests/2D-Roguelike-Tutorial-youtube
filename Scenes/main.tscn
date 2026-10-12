@@ -2,12 +2,11 @@
 
 [ext_resource type="PackedScene" uid="uid://ckvu8yjgcr227" path="res://Scenes/player.tscn" id="1_jjgbg"]
 [ext_resource type="Script" uid="uid://da0jks2q6tig8" path="res://Scripts/PlayerCamera.gd" id="2_8gbba"]
-[ext_resource type="PackedScene" uid="uid://bscw2r0xxsmt1" path="res://Scenes/Hazard.tscn" id="3_hazrd"]
-[ext_resource type="PackedScene" uid="uid://da72qidqpewxi" path="res://Scenes/dummy.tscn" id="4_dummy"]
+[ext_resource type="PackedScene" uid="uid://c1qwytsdrwjod" path="res://Scenes/GruntEnemy.tscn" id="3_8gbba"]
 
 [node name="Main" type="Node2D" unique_id=535670457]
 
-[node name="Player" parent="." unique_id=710743712 instance=ExtResource("1_jjgbg")]
+[node name="player" parent="." unique_id=710743712 instance=ExtResource("1_jjgbg")]
 position = Vector2(143, 149)
 dash_cooldown = 2.965
 
@@ -15,10 +14,7 @@ dash_cooldown = 2.965
 position = Vector2(143, 149)
 zoom = Vector2(4, 4)
 script = ExtResource("2_8gbba")
-target_path = NodePath("../Player")
+target_path = NodePath("../player")
 
-[node name="Hazard" parent="." unique_id=460207323 instance=ExtResource("3_hazrd")]
-position = Vector2(184, 133)
-
-[node name="Dummy" parent="." unique_id=522414560 instance=ExtResource("4_dummy")]
-position = Vector2(97.63636, 181.54546)
+[node name="GruntEnemy" parent="." unique_id=522414560 instance=ExtResource("3_8gbba")]
+position = Vector2(73.459, 172.754)

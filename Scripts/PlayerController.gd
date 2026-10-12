@@ -32,6 +32,7 @@ var _knockback := Vector2.ZERO
 func _ready() -> void:
 	_last_good_pos = global_position
 	_base_sprite_scale = player_sprite.scale
+	GameManager.register_player(self)
 	
 func _physics_process(delta: float) -> void:
 	_handle_attack_input()

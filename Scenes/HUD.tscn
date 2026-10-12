@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://bdhxmaw4pdoda"]
+
+[ext_resource type="Script" uid="uid://k6fjhb67sm07" path="res://Scripts/StatBar.gd" id="1_sd512"]
+
+[node name="CanvasLayer" type="CanvasLayer" unique_id=763541727]
+
+[node name="HealthBar" type="Control" parent="." unique_id=56432768]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 191.0
+offset_bottom = 42.0
+script = ExtResource("1_sd512")
+
+[node name="DashBar" type="Control" parent="." unique_id=812857986]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 2.0
+offset_top = 52.0
+offset_right = 250.0
+offset_bottom = 91.0
+script = ExtResource("1_sd512")
+
+[node name="StatusLabel" type="Label" parent="." unique_id=1830744412]
+offset_left = 14.0
+offset_top = 111.0
+offset_right = 54.0
+offset_bottom = 134.0

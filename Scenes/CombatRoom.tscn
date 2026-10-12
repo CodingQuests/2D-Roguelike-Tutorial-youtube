@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://c0183p8ae0348"]
+
+[ext_resource type="PackedScene" uid="uid://ckvu8yjgcr227" path="res://Scenes/player.tscn" id="1_nl0ey"]
+[ext_resource type="Script" uid="uid://dge2i6hoo4yel" path="res://Scripts/RoomController.gd" id="1_qhs6v"]
+[ext_resource type="Script" uid="uid://da0jks2q6tig8" path="res://Scripts/PlayerCamera.gd" id="2_qhs6v"]
+[ext_resource type="PackedScene" uid="uid://bdhxmaw4pdoda" path="res://Scenes/HUD.tscn" id="4_qhs6v"]
+
+[node name="CombatRoom" type="Node2D" unique_id=535670457]
+script = ExtResource("1_qhs6v")
+
+[node name="player" parent="." unique_id=710743712 instance=ExtResource("1_nl0ey")]
+position = Vector2(143, 149)
+dash_cooldown = 2.965
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1987023519]
+position = Vector2(143, 149)
+zoom = Vector2(4, 4)
+script = ExtResource("2_qhs6v")
+target_path = NodePath("../player")
+
+[node name="Enemies" type="Node2D" parent="." unique_id=939243685]
+
+[node name="Projectiles" type="Node2D" parent="." unique_id=541164977 groups=["projectiles"]]
+
+[node name="Pickups" type="Node2D" parent="." unique_id=1956815919 groups=["pickups"]]
+
+[node name="CanvasLayer" parent="." unique_id=763541727 instance=ExtResource("4_qhs6v")]

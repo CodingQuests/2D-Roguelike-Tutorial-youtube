@@ -1,5 +1,7 @@
 extends Node
 
+var hud: CanvasLayer = null
+var player: Node = null
 var camera: Camera2D = null
 
 var _hitstop_token := 0
@@ -25,7 +27,22 @@ func hit_stop(duration: float) -> void:
 	if my_token == _hitstop_token:
 		Engine.time_scale = 1.0
 	
+func slow_mo(scale: float, duration: float) -> void:
+	scale = clampf(scale, 0.02, 1.0)
+	Engine.time_scale = scale
+	_hitstop_token += 1
+	var my_token := _hitstop_token
+	var timer := get_tree().create_timer(duration, true, false, true)
+	await timer.timeout
+	if my_token == _hitstop_token:
+		Engine.time_scale = 1.0
 	
-	
-	
+func register_hud(h: CanvasLayer) -> void:
+	hud = h
+
+
+func register_player(p: Node) -> void:
+	player = p
+
+
 	

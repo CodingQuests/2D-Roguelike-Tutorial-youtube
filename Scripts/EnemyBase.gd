@@ -25,6 +25,8 @@ var _knockback := Vector2.ZERO
 var _player: Node2D = null
 var _tele_elapsed := 0.0
 var _hitstun := 0.0
+var _spawning := false
+var _base_sprite_scale := Vector2.ONE
 
 func _ready() -> void:
 	health.died.connect(die)
@@ -45,6 +47,10 @@ func _ai_process(_delta: float) -> void:
 	
 func _physics_process(delta: float) -> void:
 	if state == State.DEAD:
+		return
+	if _spawning:
+		velocity = Vector2.ZERO
+		move_and_slide()
 		return
 	if _player == null or not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player")
@@ -137,4 +143,21 @@ func _tick_telegraph(delta: float) -> void:
 	var total := maxf(_tele_elapsed + maxf(state_timer, 0.0), 0.001)
 	var fill := clampf(_tele_elapsed / total, 0.0, 1.0)
 	telegraph.modulate.a = lerpf(0.25, 0.75, fill)
+	
+
+func spawn_in() -> void:
+	_spawning = true
+	var world := get_tree().current_scene
+	Juice.ring(world, global_position, Color(0.9, 0.3, 0.3, 0.8), 30.0, 0.32)
+	Juice.impact(world, global_position, Color(0.5, 0.2, 0.2), 8, 0.8)
+	var keep := sprite.modulate
+	sprite.scale = _base_sprite_scale * 0.1
+	sprite.modulate = Color(keep.r, keep.g, keep.b, 0.0)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(sprite, "scale", _base_sprite_scale, 0.3)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(sprite, "modulate:a", keep.a, 0.25)
+	tw.chain().tween_callback(func() -> void: _spawning = false)
+	
 	

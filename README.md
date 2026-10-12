@@ -1,36 +1,35 @@
-# The Last Forge · Lesson 3.4: A boss with a tell
+# The Last Forge · Lesson 3.5: The room knows the fight is over
 
-Chapter 3, Make One Room Worth Fighting In. This branch is the project at the **end of lesson 3.4** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
+Chapter 3, Make One Room Worth Fighting In. This branch is the project at the **end of lesson 3.5** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
 
-Starting lesson 3.5? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-3.4.zip), unzip it, and open `project.godot` in Godot 4.7.2.
+Starting lesson 3.6? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-3.5.zip), unzip it, and open `project.godot` in Godot 4.7.2.
 
-[← lesson 3.3](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-3.3) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 3.5 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-3.5)
+[← lesson 3.4](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-3.4) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 3.6 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-3.6)
 
-A boss with three warned patterns, picked at random: a slam, a ring of projectiles and a charge. It keeps its distance between attacks. Below half health it enrages once, with a shake, a hit stop, a red tint and an expanding ring. After that its warnings and recoveries are shorter and its ring has 10 shots instead of 8.
+A combat room that spawns a wave away from the player and counts the enemies. At depth 1 that's three grunts, a caster, a charger and two skitterlings. Each enemy fades in with a ring. The last kill slows time and asks the HUD to show ROOM CLEARED. The HUD scene with a health bar, a dash bar and a status label is in.
 
 
 ## Files added
-- `Scenes/BossEnemy.tscn`: duplicated from the caster scene. Tile 87 at scale 4, larger shapes, and a hitbox circle of radius 54. Its Telegraph is at scale 1.17.
-- `Scripts/BossEnemy.gd` (and its `.uid`): the Pattern enum, `_choose_pattern()` with `pick_random()`, `_execute_pattern()`, `_fire_ring()`, `_enter_recovery()`, `_enraged()`, `_on_enrage()` and `set_level()`. The boss joins the `boss` group.
+- `Scenes/CombatRoom.tscn`: duplicated from main. It has an `Enemies` container, `Projectiles` (group `projectiles`) and `Pickups` (group `pickups`), plus the HUD instance, and the root runs `RoomController.gd`.
+- `Scripts/RoomController.gd` (and its `.uid`): preloads the five enemy scenes and builds the wave list by depth. `_random_spawn_point()` tries 12 times for a spot at least 120 px from the player, then falls back to the farthest corner. It tracks the alive count. `_clear_active_room()` runs slow-mo, the status text and the `room_clear` sound.
+- `Scenes/HUD.tscn`: a CanvasLayer with HealthBar, DashBar and StatusLabel.
+- `Scripts/HUD.gd` (and its `.uid`): registers with GameManager, reads the player's health and dash every frame, and has `show_status()`.
+- `Scripts/StatBar.gd` (and its `.uid`): a bar drawn in `_draw()` with a delayed "ghost" behind it.
 
 ## Files changed
-- `Scripts/EnemyBase.gd`: `hide_telegraph()` now lives in EnemyBase, shown on screen as "Telegraph reset and rectangle helper".
-- `Scripts/Juice.gd`: adds `ring()` and `_circle_points()`.
-- `Scenes/Projectile.tscn`: the projectile sprite gets a texture (tile 118).
-- `Scenes/main.tscn`: the other enemies are deleted. Main now holds the player, the camera and the boss.
+- `Scripts/EnemyBase.gd`: adds `spawn_in()` (ring, particles, then a scale and fade tween), `_spawning`, `_base_sprite_scale`, and a spawning guard in `_physics_process()`.
+- `Scripts/GameManager.gd`: adds `hud`, `player`, `register_hud()`, `register_player()` and `slow_mo()`.
+- `Scripts/PlayerController.gd`: calls `GameManager.register_player(self)` in `_ready()`.
 
 ## Good to know
-- With `hide_telegraph()` in EnemyBase, the brute and skitterling scripts from 3.3 load again.
-- Known at this point: the slam warns at radius 80 but only hits within 22. The Inspector scale and shape tweaks don't stick, because the code sets both every time. Fixed in lesson 3.6 (`SLAM_RADIUS`).
-- Known at this point: the slam and volley warnings are squares, because the boss kept the white texture from the caster and charger. Lesson 3.6 builds a round and a rectangular warning texture in code.
-- Known at this point: the boss's Telegraph is saved visible, so its square shows from the first frame until its first attack. Fixed in lesson 3.6, which hides the telegraph at the end of `_ready()`.
-- The boss's preload uses `res://Scenes/Projectile.tscn` with a capital S, following 3.3's correction. The video types `scenes`.
-- `set_level()` isn't called yet. It's there for scaling by floor later.
+- Run `CombatRoom.tscn` with F6 (Run Current Scene). `main.tscn` (the boss arena) is still the main scene.
+- `RoomController.gd` uses `$player` (lowercase) to match the node in CombatRoom, fixed in the silent pickup near the end. Its preloads use `res://Scenes/` with a capital S, following 3.3's correction.
+- Known at this point: `HUD.gd` isn't attached to `HUD.tscn`, so the bars don't follow the player and ROOM CLEARED never appears. `room_clear` has no sound in AudioManager. `_base_sprite_scale` is never set, so `spawn_in()` grows every sprite back to scale 1. Lesson 3.6 fixes all three (cards 04, 10 and 08), along with 3.4's open items (the boss's square warnings, the 80/22 slam and the warning visible at start).
 
 ## Build this part yourself
 
 The same game is a set of interactive quests on CodingQuests: you write each system yourself and your code gets
-checked. The whole controller quest is free, no account needed: https://codingquests.io/roguelike?utm_source=github&utm_medium=readme&utm_campaign=fcc_2d_roguelike&utm_content=enemies
+checked. The whole controller quest is free, no account needed: https://codingquests.io/roguelike?utm_source=github&utm_medium=readme&utm_campaign=fcc_2d_roguelike&utm_content=rooms
 
 ## Requirements
 

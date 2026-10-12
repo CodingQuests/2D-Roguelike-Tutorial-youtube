@@ -3,10 +3,19 @@
 [ext_resource type="Script" uid="uid://ca6u4yyrbt5j1" path="res://Scripts/PlayerController.gd" id="1_cvnsp"]
 [ext_resource type="Texture2D" uid="uid://cghfo48xt24ri" path="res://Assets/Tiles/tile_0096.png" id="1_v0iea"]
 [ext_resource type="Texture2D" uid="uid://c5crvkkvdrcxh" path="res://Assets/Tiles/tile_0105.png" id="3_6t5aa"]
+[ext_resource type="Script" uid="uid://bodg87p7ovgmm" path="res://Scripts/HitboxComponent.gd" id="4_fkybt"]
+[ext_resource type="Script" uid="uid://c4fhsoy6b6530" path="res://Scripts/HurtboxComponent.gd" id="4_vgqql"]
+[ext_resource type="Script" uid="uid://ndidq3dg483g" path="res://Scripts/HealthComponent.gd" id="6_x3wgy"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hhunp"]
 radius = 4.0
 height = 10.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ceyr3"]
+size = Vector2(15, 13)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hhunp"]
+size = Vector2(12, 15)
 
 [node name="Player" type="CharacterBody2D" unique_id=710743712]
 collision_layer = 2
@@ -27,3 +36,27 @@ position = Vector2(17, 1.1920929e-07)
 rotation = 1.5707964
 scale = Vector2(0.75, 0.75)
 texture = ExtResource("3_6t5aa")
+
+[node name="HitboxComponent" type="Area2D" parent="WeaponPivot" unique_id=1434058141]
+collision_layer = 32
+collision_mask = 0
+script = ExtResource("4_fkybt")
+metadata/_custom_type_script = "uid://bodg87p7ovgmm"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WeaponPivot/HitboxComponent" unique_id=230325034]
+position = Vector2(16, 0)
+shape = SubResource("RectangleShape2D_ceyr3")
+
+[node name="Hurtbox" type="Area2D" parent="." unique_id=1832098776]
+collision_layer = 8
+collision_mask = 64
+script = ExtResource("4_vgqql")
+metadata/_custom_type_script = "uid://c4fhsoy6b6530"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=1614547467]
+position = Vector2(0, 0.5)
+shape = SubResource("RectangleShape2D_hhunp")
+
+[node name="Health" type="Node" parent="." unique_id=1620990835]
+script = ExtResource("6_x3wgy")
+metadata/_custom_type_script = "uid://ndidq3dg483g"

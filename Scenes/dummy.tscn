@@ -2,12 +2,18 @@
 
 [ext_resource type="Texture2D" uid="uid://mrjj5tyg5jsn" path="res://Assets/Tiles/tile_0082.png" id="1_x66xh"]
 [ext_resource type="Script" uid="uid://ndidq3dg483g" path="res://Scripts/HealthComponent.gd" id="2_5d6mj"]
+[ext_resource type="Script" uid="uid://c4fhsoy6b6530" path="res://Scripts/HurtboxComponent.gd" id="3_s0uyp"]
+[ext_resource type="Script" uid="uid://bodg87p7ovgmm" path="res://Scripts/HitboxComponent.gd" id="4_3clv1"]
+[ext_resource type="Texture2D" uid="uid://c5crvkkvdrcxh" path="res://Assets/Tiles/tile_0105.png" id="5_2tnuu"]
 
 [sub_resource type="GDScript" id="GDScript_ceyr3"]
 script/source = "extends CharacterBody2D
 
 @onready var health: HealthComponent = $Health
+const KNOCKBACK_DECAY := 1700.0
+const KNOCKBACK_TAKEN := 0.6      # the player is shoved less than enemies are
 
+var _knockback := Vector2.ZERO
 func _ready() -> void:
 	health.died.connect(_on_health_died)
 func _unhandled_input(event: InputEvent) -> void:
@@ -15,14 +21,25 @@ func _unhandled_input(event: InputEvent) -> void:
 		health.damage(10.0)
 		print(health.current_health)
 
-
+func _physics_process(delta: float) -> void:
+	velocity = _knockback
+	_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
+	move_and_slide()
 func _on_health_died() -> void:
 	queue_free()
+func apply_knockback(dir: Vector2, force: float) -> void:
+	_knockback = dir.normalized() * force * KNOCKBACK_TAKEN
+	
 "
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hhunp"]
 radius = 7.0
 height = 18.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ceyr3"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2tnuu"]
+size = Vector2(15, 13)
 
 [node name="Dummy" type="CharacterBody2D" unique_id=522414560]
 script = SubResource("GDScript_ceyr3")
@@ -36,3 +53,28 @@ shape = SubResource("CapsuleShape2D_hhunp")
 [node name="Health" type="Node" parent="." unique_id=2015383893]
 script = ExtResource("2_5d6mj")
 metadata/_custom_type_script = "uid://ndidq3dg483g"
+
+[node name="HurtboxComponent" type="Area2D" parent="." unique_id=2072059626]
+collision_layer = 16
+collision_mask = 32
+script = ExtResource("3_s0uyp")
+metadata/_custom_type_script = "uid://c4fhsoy6b6530"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HurtboxComponent" unique_id=60642843]
+shape = SubResource("CapsuleShape2D_ceyr3")
+
+[node name="HitboxComponent" type="Area2D" parent="." unique_id=787784906]
+collision_layer = 64
+collision_mask = 0
+script = ExtResource("4_3clv1")
+metadata/_custom_type_script = "uid://bodg87p7ovgmm"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="HitboxComponent" unique_id=524290147]
+position = Vector2(16, 0)
+shape = SubResource("RectangleShape2D_2tnuu")
+
+[node name="Sprite2D2" type="Sprite2D" parent="HitboxComponent" unique_id=1085645477]
+position = Vector2(17, 1.1920929e-07)
+rotation = 1.5707964
+scale = Vector2(0.75, 0.75)
+texture = ExtResource("5_2tnuu")

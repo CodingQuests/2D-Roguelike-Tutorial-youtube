@@ -1,7 +1,7 @@
 class_name PlayerController
 extends CharacterBody2D
 
-
+@onready var hurtbox: HurtboxComponent = $Hurtbox
 @export var move_speed: float = 180.0
 @onready var weapon_pivot: Node2D = $WeaponPivot
 @onready var sprite_2d: Sprite2D = $WeaponPivot/Sprite2D
@@ -23,6 +23,11 @@ var _dash_cd_timer := 0.0
 var _base_sprite_scale := Vector2.ONE
 var _bob_time := 0.0
 
+const KNOCKBACK_DECAY := 1700.0
+const KNOCKBACK_TAKEN := 0.6      # the player is shoved less than enemies are
+
+var _knockback := Vector2.ZERO
+
 func _ready() -> void:
 	_last_good_pos = global_position
 	_base_sprite_scale = player_sprite.scale
@@ -34,7 +39,8 @@ func _physics_process(delta: float) -> void:
 	if _is_dashing:
 		velocity = _dash_dir * dash_speed
 	else:
-		velocity = _get_move_input() * move_speed
+		velocity = _get_move_input() * move_speed + _knockback
+		_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
 		
 		
 	if not _finite(velocity):
@@ -76,11 +82,13 @@ func _start_dash() -> void:
 	_dash_timer = dash_duration
 	_dash_cd_timer = dash_cooldown
 	invulnerable = true
+	hurtbox.invulnerable = true
 	sprite_2d.modulate = Color(0.7, 0.9, 1.0)
 	player_sprite.modulate = Color(0.7, 0.9, 1.0)
 func _end_dash() -> void:
 	_is_dashing = false
 	invulnerable = false
+	hurtbox.invulnerable = false
 	sprite_2d.modulate = Color.WHITE
 	player_sprite.modulate = Color.WHITE
 	
@@ -112,7 +120,7 @@ func _update_body_juice(delta: float, moving: bool) -> void:
 	_bob_time += delta * freq
 	player_sprite.position.y = sin(_bob_time) * amp
 	
-	
-	
+func apply_knockback(dir: Vector2, force: float) -> void:
+	_knockback = dir.normalized() * force * KNOCKBACK_TAKEN
 	
 	

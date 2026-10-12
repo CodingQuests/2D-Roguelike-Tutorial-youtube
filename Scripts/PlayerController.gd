@@ -3,10 +3,12 @@ extends CharacterBody2D
 
 @onready var hurtbox: HurtboxComponent = $Hurtbox
 @export var move_speed: float = 180.0
-@onready var weapon_pivot: Node2D = $WeaponPivot
-@onready var sprite_2d: Sprite2D = $WeaponPivot/Sprite2D
+@onready var sprite_2d: Sprite2D = $WeaponPivot/WeaponSprite
 @onready var player_sprite: Sprite2D = $Tile0096
-@onready var hitbox: HitboxComponent = $WeaponPivot/HitboxComponent
+@onready var hitbox: HitboxComponent = $WeaponPivot/AttackHitbox
+@onready var weapon: WeaponController = $WeaponPivot
+
+
 var _last_good_pos := Vector2.ZERO
 
 @export var dash_speed: float = 520.0
@@ -32,15 +34,14 @@ func _ready() -> void:
 	_base_sprite_scale = player_sprite.scale
 	
 func _physics_process(delta: float) -> void:
-	if Input.is_action_just_pressed("quick_attack"):
-		hitbox.reset_hits()
+	_handle_attack_input()
 	_update_aim()
 	_update_dash(delta)
 	_update_body_juice(delta, _get_move_input().length() > 0.1)
 	if _is_dashing:
 		velocity = _dash_dir * dash_speed
 	else:
-		velocity = _get_move_input() * move_speed + _knockback
+		velocity = _get_move_input() * move_speed * weapon.get_move_factor() + _knockback
 		_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
 		
 		
@@ -63,7 +64,7 @@ func _get_move_input() -> Vector2:
 
 func _update_aim() -> void:
 	var to_mouse := get_global_mouse_position() - global_position
-	weapon_pivot.rotation = to_mouse.angle()
+	weapon.rotation = to_mouse.angle()
 	if absf(to_mouse.x) > 4.0:
 		sprite_2d.flip_h = to_mouse.x < 0.0
 	
@@ -122,4 +123,11 @@ func _update_body_juice(delta: float, moving: bool) -> void:
 func apply_knockback(dir: Vector2, force: float) -> void:
 	_knockback = dir.normalized() * force * KNOCKBACK_TAKEN
 	
+func _handle_attack_input() -> void:
+	if Input.is_action_just_pressed("swap_weapon"):
+		weapon.swap()
+	if Input.is_action_just_pressed("quick_attack"):
+		weapon.try_quick_attack()
+	elif Input.is_action_just_pressed("heavy_attack"):
+		weapon.try_heavy_attack()
 	

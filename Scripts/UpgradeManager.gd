@@ -5,6 +5,7 @@ extends Node
 # rarity: "common" | "rare" | "cursed"
 var _defs: Array = []
 const RARITY_WEIGHT := {"common": 3.0, "rare": 1.6, "cursed": 1.0}
+const CLEANSE_MIN_CORRUPTION := 12.0
 
 func _ready() -> void:
 	# One dictionary per upgrade, five fields each. "apply" is the function itself,
@@ -20,6 +21,11 @@ func _ready() -> void:
 			"desc": "+12% movement speed", "corruption": 6, "apply": _apply_swift_boots},
 		{"id": "rapid_edge", "title": "Rapid Edge", "rarity": "common",
 			"desc": "-20% attack cooldowns", "corruption": 10, "apply": _apply_rapid_edge},
+		{"id": "glass_blade", "title": "Glass Blade", "rarity": "cursed",
+		"desc": "+25% damage, but take +15% damage", "corruption": 15, "apply": _apply_glass},
+		{"id": "cleansing_light", "title": "Cleansing Light", "rarity": "common",
+			"desc": "Purge 25 corruption from your weapon", "corruption": -25,
+			"apply": _apply_noop},
 	]
 
 func _apply_sharpened(p: PlayerController) -> void:
@@ -39,9 +45,23 @@ func _apply_swift_boots(p: PlayerController) -> void:
 	p.move_speed_mult *= 1.12
 
 
+func _apply_glass(p: PlayerController) -> void:
+	# Multiply rather than set: a second copy stacks on the first instead of overwriting.
+	p.glass_damage_mult *= 1.25
+	p.glass_taken_mult *= 1.15
+	
 func _apply_rapid_edge(p: PlayerController) -> void:
 	p.attack_cooldown_mult *= 0.8
 	
+func _apply_noop(_p: PlayerController) -> void:
+	# Exists because every def needs an "apply". The underscore on _p tells
+	# Godot the unused argument is on purpose, so no warning.
+	pass
+func _player_corruption() -> float:
+	# Null-safe read. No player yet, treat it as zero, and Cleansing Light
+	# stays out of the pool.
+	var p := GameManager.player
+	return p.corruption if p != null else 0.0
 	
 func get_choices(count: int) -> Array:
 	var owned: Array = _owned_unique_ids()
@@ -51,6 +71,11 @@ func get_choices(count: int) -> Array:
 	for d in _defs:
 		if d.get("unique", false) and owned.has(d["id"]):
 			continue
+		# Same shape as the unique check. Not enough corruption to be worth purging,
+		# skip it out of the pool. The backslash is just a line break.
+		if d["id"] == "cleansing_light" \
+				and _player_corruption() < CLEANSE_MIN_CORRUPTION:    # ← NEW
+			continue                                                  # ← NEW
 		pool.append(d)
 	return _weighted_sample(pool, count)
 

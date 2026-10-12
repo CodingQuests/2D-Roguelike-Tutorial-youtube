@@ -23,11 +23,28 @@ offset_right = 250.0
 offset_bottom = 91.0
 script = ExtResource("1_sd512")
 
+[node name="CorruptionBar" type="Control" parent="." unique_id=2078485336]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 950.0
+offset_top = 12.0
+offset_right = 1141.0
+offset_bottom = 54.0
+script = ExtResource("1_sd512")
+fill_color = Color(0.6271607, 0.31678772, 0.7880336, 1)
+ghost_color = Color(0.4600919, 0.24594653, 0.3518346, 1)
+
 [node name="StatusLabel" type="Label" parent="." unique_id=1830744412]
 offset_left = 14.0
 offset_top = 111.0
 offset_right = 54.0
 offset_bottom = 134.0
+
+[node name="TierLabel" type="Label" parent="." unique_id=754757090]
+offset_left = 1073.0
+offset_top = 76.0
+offset_right = 1113.0
+offset_bottom = 99.0
 
 [node name="Minimap" type="Control" parent="." unique_id=1462836531 groups=["Minimap"]]
 layout_mode = 3
@@ -55,3 +72,11 @@ offset_right = 1048.0
 offset_bottom = 409.0
 theme_override_constants/separation = 24
 alignment = 1
+
+[node name="Skip" type="Button" parent="UpgradePanel" unique_id=1973326121]
+layout_mode = 0
+offset_left = 486.0
+offset_top = 445.0
+offset_right = 701.0
+offset_bottom = 506.0
+text = "Take Nothing"

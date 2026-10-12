@@ -154,7 +154,7 @@ func _compute_damage() -> float:
 	var base: float = float(p["h_dmg"]) if _current_is_heavy else float(p["q_dmg"])
 	# Bonus off the player, the matching one. Add them.
 	var bonus: float = _player.heavy_bonus_damage if _current_is_heavy else _player.quick_bonus_damage
-	return base + bonus
+	return (base + bonus) * _player.get_outgoing_damage_mult()
 
 	
 func _cd_mult() -> float:

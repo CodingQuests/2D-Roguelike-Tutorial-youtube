@@ -116,3 +116,37 @@ static func _circle_points(r: float, steps: int = 24) -> PackedVector2Array:
 	return pts
 	
 	
+
+
+# Juice.gd
+static func floating_text(world: Node, pos: Vector2, text: String,
+		color: Color = Color.WHITE, font_size: int = 10, rise: float = 20.0) -> void:
+	# Same guard as the other Juice helpers. No world, no label.
+	if world == null or not is_instance_valid(world):
+		return
+	var label := Label.new()
+	label.text = text
+	label.z_index = 100    # draws on top
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", color)
+	# A 2 px black outline, so it reads over anything.
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
+	label.add_theme_constant_override("outline_size", 2)
+	# So it can never sit in front of a button and eat a click.
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Into the tree first: global_position only means something once it's in there.
+	world.add_child(label)
+	# Nudged left by roughly half the text width, so it's centred on the point.
+	label.global_position = pos + Vector2(-text.length() * font_size * 0.3, -12)
+	label.scale = Vector2(0.4, 0.4)    # starts at 40%
+
+	var tw := label.create_tween()
+	# Pop up to full size. The back ease overshoots a bit and settles.
+	tw.tween_property(label, "scale", Vector2.ONE, 0.2)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# parallel(): the rise runs at the same time, over 0.7 s.
+	tw.parallel().tween_property(
+		label, "global_position", label.global_position + Vector2(0, -rise), 0.7)
+	# Then fade out, then free.
+	tw.tween_property(label, "modulate:a", 0.0, 0.35)
+	tw.tween_callback(label.queue_free)

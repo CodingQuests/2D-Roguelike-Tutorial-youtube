@@ -14,7 +14,7 @@ func setup(def: Dictionary) -> void:
 	# Store the def, fill the two labels, tint the title by rarity.
 	_def = def
 	$VBox/Title.text = def["title"]
-	$VBox/Desc.text = def["desc"]
+	$VBox/Desc.text = def["desc"] + "\nCorruption: %+d" % int(def.get("corruption", 0))
 	$VBox/Title.add_theme_color_override("font_color", _rarity_colour(def["rarity"]))
 	
 func _rarity_colour(rarity: String) -> Color:

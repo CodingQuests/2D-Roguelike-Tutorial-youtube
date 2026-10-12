@@ -21,6 +21,8 @@ signal defeated(enemy)
 
 var state: int = State.IDLE
 var state_timer: float = 0.0
+var is_corrupted := false
+
 var _knockback := Vector2.ZERO
 var _player: Node2D = null
 var _tele_elapsed := 0.0
@@ -29,6 +31,7 @@ var _spawning := false
 var _base_sprite_scale := Vector2.ONE
 var _circle_tele: Texture2D
 var _rect_tele: Texture2D
+
 func _ready() -> void:
 	health.died.connect(die)
 	_on_ready()
@@ -211,3 +214,23 @@ func _init_telegraph_textures() -> void:
 func show_charge_warning(travel: float, radius: float, direction: Vector2) -> void:
 	show_telegraph_rect(travel + radius * 2.0, radius * 2.0, direction)
 	telegraph.position = direction * travel * 0.5
+	
+func make_corrupted() -> void:
+	# These are all multiplies, so calling it twice would make a double elite.
+	if is_corrupted:
+		return
+	is_corrupted = true
+	# Push the new max into the health component, max and current. This runs
+	# before spawn_in, so it appears at full elite health, not healing up to it.
+	max_health *= 1.6
+	health.max_health = max_health
+	health.current_health = max_health
+	speed *= 1.15
+	attack_damage *= 1.3
+	# attack_area.damage is the thing that actually hits you. The enemy's own
+	# field is just where it's kept.
+	attack_area.damage = attack_damage
+	# Violet tint and a pulsing violet outline. Never guess which one's the elite.
+	sprite.modulate = Color(0.75, 0.45, 1.0)
+	Juice.set_outline(sprite, true, Color(0.7, 0.2, 1.0), 1.0, true)
+

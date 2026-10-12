@@ -153,6 +153,7 @@ func _spawn(scene: PackedScene, room_index: int) -> void:
 	e.global_position = floor_layer.random_point_in_room(
 		room_index, player.global_position, 120.0)
 	e.defeated.connect(_on_enemy_defeated)
+	_maybe_corrupt(e)
 	if e.has_method("spawn_in"):
 		e.spawn_in()
 	_alive += 1
@@ -171,3 +172,17 @@ func _start_boss(i: int) -> void:
 		boss.spawn_in()
 	_alive += 1
 	_set_status("The Forge Warden", 2.0)
+func _maybe_corrupt(enemy: Node) -> void:
+	# Anything spawned that isn't an EnemyBase just gets skipped.
+	if not enemy.has_method("make_corrupted"):
+		return
+	var corr: float = player.corruption
+	# Chance from the player's corruption band. Same thresholds as the tiers.
+	var chance := 0.0
+	if corr >= 75.0:   chance = 0.6
+	elif corr >= 50.0: chance = 0.38
+	elif corr >= 25.0: chance = 0.18
+	# randf() is 0..1, so under the chance means corrupt it.
+	if randf() < chance:
+		enemy.make_corrupted()
+		

@@ -2,6 +2,7 @@ class_name PlayerController
 extends CharacterBody2D
 
 signal stats_changed
+signal corruption_changed(value: float, maximum: float)
 
 @onready var health: HealthComponent = $Health
 @onready var hurtbox: HurtboxComponent = $Hurtbox
@@ -16,11 +17,15 @@ signal stats_changed
 @export var dash_speed: float = 520.0
 @export var dash_duration: float = 0.14
 @export var dash_cooldown: float = 0.6
+@export var max_corruption: float = 100.0
 
+var corruption: float = 0.0
 var quick_bonus_damage: float = 0.0
 var heavy_bonus_damage: float = 0.0
 var move_speed_mult: float = 1.0
 var attack_cooldown_mult: float = 1.0
+var glass_damage_mult: float = 1.0
+var glass_taken_mult: float = 1.0
 
 var _last_good_pos := Vector2.ZERO
 var _is_dashing := false
@@ -30,6 +35,7 @@ var _dash_cd_timer := 0.0
 var _base_sprite_scale := Vector2.ONE
 var _bob_time := 0.0
 var _knockback := Vector2.ZERO
+var _last_tier := "Stable"
 
 const KNOCKBACK_DECAY := 1700.0
 const KNOCKBACK_TAKEN := 0.6      # the player is shoved less than enemies are
@@ -163,8 +169,64 @@ func apply_upgrade(def: Dictionary) -> void:
 	var fn: Callable = def["apply"]
 	fn.call(self)
 	items.append(def)
-	on_stats_changed()
+	add_corruption(float(def.get("corruption", 0)))
 	
 func on_stats_changed() -> void:
+	hurtbox.damage_multiplier = _corruption_taken_mult() * glass_taken_mult
 	stats_changed.emit()
+	
+
+func add_corruption(amount: float) -> void:
+	# Clamped to zero..max: can't overflow, can't go negative. The clamp is
+	# also what lets a negative amount work later.
+	corruption = clampf(corruption + amount, 0.0, max_corruption)
+	corruption_changed.emit(corruption, max_corruption)
+	# The damage multipliers read corruption soon, so they re-run every time it moves.
+	var tier := get_corruption_tier()
+	if tier != _last_tier:
+		_last_tier = tier
+		_on_tier_changed(tier)
+	on_stats_changed()
+
+func get_corruption_tier() -> String:
+	# Less-than checks from the bottom up: each elif only runs if the one above missed.
+	if corruption < 25.0:
+		return "Stable"
+	elif corruption < 50.0:
+		return "Tainted"
+	elif corruption < 75.0:
+		return "Corrupted"
+	# The fall-through: 75 and up is Overloaded with no check at all.
+	return "Overloaded"
+	
+func _corruption_damage_mult() -> float:
+	# Top down with >=, so the highest band you've reached wins. 5%, 12%, 22% more damage.
+	if corruption >= 75.0:   return 1.22
+	elif corruption >= 50.0: return 1.12
+	elif corruption >= 25.0: return 1.05
+	return 1.0
+func _corruption_taken_mult() -> float:
+	# Same shape, bigger numbers: 6%, 18%, 40% more damage taken. You always
+	# lose more than you gain, and that gap is on purpose.
+	if corruption >= 75.0:   return 1.4
+	elif corruption >= 50.0: return 1.18
+	elif corruption >= 25.0: return 1.06
+	return 1.0
+func get_outgoing_damage_mult() -> float:
+	# The one public function: corruption's multiplier times Glass Blade's.
+	# The weapon is about to read this.
+	return _corruption_damage_mult() * glass_damage_mult
+	
+func _on_tier_changed(tier: String) -> void:
+	GameManager.shake_camera(0.25)
+	AudioManager.play("telegraph", -2.0, 0.7)    # -2 dB, lower pitch
+	# Into current_scene, not under the player, so the label stays where it
+	# was born while you move on.
+	var world := get_tree().current_scene
+	# A violet ring out to 60 px over half a second, a burst of 22, the tier
+	# name in capitals rising off the player.
+	Juice.ring(world, global_position, Color(0.6, 0.1, 0.7, 0.9), 60.0, 0.5, 3.0)
+	Juice.impact(world, global_position, Color(0.5, 0.1, 0.6), 22, 1.8)
+	Juice.floating_text(world, global_position, tier.to_upper(), Color(0.85, 0.4, 1.0), 18)
+	
 	

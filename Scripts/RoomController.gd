@@ -26,6 +26,8 @@ var _reward_is_boss := false
 var _stocked: Dictionary = {}
 var _open_stands: Dictionary = {}
 
+const FINAL_FLOOR := 3
+
 func _ready() -> void:
 	GameManager.start_run()
 	randomize()
@@ -125,7 +127,10 @@ func _on_upgrade_chosen(def: Dictionary) -> void:
 	get_tree().paused = false
 	# If that was the boss, now we descend.
 	if _reward_is_boss:
-		_enter_floor(_floor_depth + 1)
+		if _floor_depth >= FINAL_FLOOR:
+			GameManager.hud.show_victory()
+		else:
+			_enter_floor(_floor_depth + 1)
 	_reward_is_boss = false
 	_busy = false
 	

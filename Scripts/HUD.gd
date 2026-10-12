@@ -195,6 +195,7 @@ func show_game_over(immediate_pause: bool = false) -> void:
 		return
 	_game_over = true
 	MetaProgression.bank_run(int(GameManager.run_stats["essence"]))
+	$GameOver/Heading.text = "YOU DIED"
 	var s: Dictionary = GameManager.run_stats
 	# One label, one line per stat.
 	game_over_summary.text = "\n".join([
@@ -213,7 +214,7 @@ func show_game_over(immediate_pause: bool = false) -> void:
 	upgrade_panel.visible = false
 	$CodexPanel.visible = false
 	game_over.visible = true
-
+	_pause_panel.visible = false
 	# Victory in 7.3 uses this path without starting a death-beat timer.
 	if immediate_pause:
 		get_tree().paused = true
@@ -265,3 +266,8 @@ func _on_title() -> void:
 	if not await Transitions.change_scene("res://Scenes/TitleScreen.tscn"):
 		_leaving = false
 
+func show_victory() -> void:
+	if _game_over:
+		return
+	show_game_over(true) 
+	$GameOver/Heading.text = "THE FORGE IS FREE"

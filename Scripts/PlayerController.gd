@@ -20,13 +20,17 @@ var invulnerable := false
 
 var _dash_cd_timer := 0.0
 
+var _base_sprite_scale := Vector2.ONE
+var _bob_time := 0.0
 
 func _ready() -> void:
 	_last_good_pos = global_position
+	_base_sprite_scale = player_sprite.scale
 	
 func _physics_process(delta: float) -> void:
 	_update_aim()
 	_update_dash(delta)
+	_update_body_juice(delta, _get_move_input().length() > 0.1)
 	if _is_dashing:
 		velocity = _dash_dir * dash_speed
 	else:
@@ -99,6 +103,14 @@ func get_dash_ratio() -> float:
 		return 1.0
 	return clampf(1.0 - _dash_cd_timer / dash_cooldown, 0.0, 1.0)
 	
+	
+func _update_body_juice(delta: float, moving: bool) -> void:
+	if _is_dashing:
+		return
+	var freq := 13.0 if moving else 3.0
+	var amp := 1.6 if moving else 0.8
+	_bob_time += delta * freq
+	player_sprite.position.y = sin(_bob_time) * amp
 	
 	
 	

@@ -31,7 +31,7 @@ func _ready() -> void:
 	randomize()
 	await get_tree().process_frame
 	_enter_floor(1)
-
+	AudioManager.play_music("combat")
 
 
 
@@ -101,7 +101,9 @@ func _finish_room_clear() -> void:
 	# Slow-mo to 35% for a third of a second, the clear sound, the banner.
 	GameManager.slow_mo(0.35, 0.35)
 	AudioManager.play("room_clear")
+	AudioManager.duck_music(-8.0, 1.6)
 	_set_status("ROOM CLEARED", 1.5)
+	
 	await get_tree().create_timer(0.4, false, false, true).timeout
 	# They can still die during that wait.
 	if not player.health.is_alive():
@@ -119,6 +121,7 @@ func _on_upgrade_chosen(def: Dictionary) -> void:
 		return
 	if not def.is_empty():
 		player.apply_upgrade(def)
+		AudioManager.play("upgrade")
 	get_tree().paused = false
 	# If that was the boss, now we descend.
 	if _reward_is_boss:

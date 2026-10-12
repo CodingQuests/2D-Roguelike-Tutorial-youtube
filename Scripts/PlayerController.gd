@@ -392,6 +392,7 @@ func _on_died() -> void:
 	# Quarter speed for 1.2 s. Same length as the HUD's timer, so the world
 	# freezes right as the slow-mo would have ended.
 	GameManager.slow_mo(0.25, 1.2)
+	AudioManager.duck_music(-14.0, 2.5)
 	# A HUD without the death screen yet gets skipped, not a crash.
 	if GameManager.hud and GameManager.hud.has_method("show_game_over"):
 		GameManager.hud.show_game_over()

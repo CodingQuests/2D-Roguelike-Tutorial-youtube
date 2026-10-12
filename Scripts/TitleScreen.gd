@@ -11,7 +11,7 @@ func _ready() -> void:
 	# Add AudioManager.play_music("calm") after completing 7.2.
 	$Center/VBox/StartButton.pressed.connect(_on_start)
 	$Center/VBox/QuitButton.pressed.connect(_on_quit)
-
+	AudioManager.play_music("calm")
 func _process(delta: float) -> void:
 	_time += delta
 	# Living glow — procedural, so nothing to spawn and nothing to free.

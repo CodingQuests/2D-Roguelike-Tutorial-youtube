@@ -71,25 +71,51 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0.47000003)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PausePanel" unique_id=394557664]
+[node name="VBox" type="VBoxContainer" parent="PausePanel" unique_id=394557664]
 layout_mode = 0
-offset_left = 464.0
-offset_top = 191.0
-offset_right = 647.0
-offset_bottom = 429.0
+offset_left = 461.0
+offset_top = 91.0
+offset_right = 644.0
+offset_bottom = 561.0
+theme_override_constants/separation = 12
 alignment = 1
 
-[node name="Resume" type="Button" parent="PausePanel/VBoxContainer" unique_id=182028027]
+[node name="Resume" type="Button" parent="PausePanel/VBox" unique_id=182028027]
 layout_mode = 2
 text = "RESUME"
 
-[node name="Restart" type="Button" parent="PausePanel/VBoxContainer" unique_id=1117459051]
+[node name="Restart" type="Button" parent="PausePanel/VBox" unique_id=1117459051]
 layout_mode = 2
 text = "RESTART"
 
-[node name="Title" type="Button" parent="PausePanel/VBoxContainer" unique_id=351574115]
+[node name="Title" type="Button" parent="PausePanel/VBox" unique_id=351574115]
 layout_mode = 2
 text = "Return To title Screen"
+
+[node name="Audio" type="VBoxContainer" parent="PausePanel/VBox" unique_id=1991117461]
+layout_mode = 2
+theme_override_constants/separation = 13
+
+[node name="MasterLabel" type="Label" parent="PausePanel/VBox/Audio" unique_id=1075540714]
+layout_mode = 2
+text = "Master"
+
+[node name="master" type="HSlider" parent="PausePanel/VBox/Audio" unique_id=1643457452]
+layout_mode = 2
+
+[node name="Sfxlabel" type="Label" parent="PausePanel/VBox/Audio" unique_id=897455242]
+layout_mode = 2
+text = "SFX"
+
+[node name="sfx" type="HSlider" parent="PausePanel/VBox/Audio" unique_id=596767425]
+layout_mode = 2
+
+[node name="MusicLabel" type="Label" parent="PausePanel/VBox/Audio" unique_id=2132430910]
+layout_mode = 2
+text = "Music"
+
+[node name="music" type="HSlider" parent="PausePanel/VBox/Audio" unique_id=687888328]
+layout_mode = 2
 
 [node name="Minimap" type="Control" parent="." unique_id=1462836531 groups=["Minimap"]]
 layout_mode = 3

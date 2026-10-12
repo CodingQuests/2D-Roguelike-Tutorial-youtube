@@ -13,7 +13,7 @@ func _ready() -> void:
 	$StartRun.pressed.connect(func() -> void:
 		Transitions.change_scene("res://Scenes/CombatRoom.tscn"))
 	_refresh()
-
+	AudioManager.play_music("calm")
 func _refresh() -> void:
 	essence_label.text = "Essence: %d" % MetaProgression.total_essence
 	for id in MetaProgression.COSTS:

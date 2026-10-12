@@ -65,6 +65,22 @@ func _ready() -> void:
 	$PausePanel/VBox/Resume.pressed.connect(_toggle_pause)
 	$PausePanel/VBox/Restart.pressed.connect(_on_restart)
 	$PausePanel/VBox/Title.pressed.connect(_on_title)
+	for key in ["master", "sfx", "music"]:
+		# Path built from the key, so the sliders must be named master, sfx and music.
+		var slider: HSlider = get_node("PausePanel/VBox/Audio/" + key)
+		# Range and step in code, so the scene can't drift from what
+		# set_audio_setting clamps to.
+		slider.min_value = 0.0
+		slider.max_value = 1.0
+		slider.step = 0.01
+		slider.value = MetaProgression.audio_settings[key]     # from the save, not the scene
+		slider.process_mode = Node.PROCESS_MODE_ALWAYS
+		# The lambda captures key: one loop wires three sliders to three settings
+		# without three functions.
+		slider.value_changed.connect(
+			func(v: float) -> void:
+				if not _leaving and not Transitions.is_busy():
+					MetaProgression.set_audio_setting(key, v))
 func _process(_delta: float) -> void:
 	if _game_over or _leaving or get_tree().paused:
 		return

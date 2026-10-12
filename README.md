@@ -1,35 +1,37 @@
-# The Last Forge · Lesson 7.1: The shell
+# The Last Forge · Lesson 7.2: Sound is half the game
 
-Chapter 7, Make It Feel Finished. This branch is the project at the **end of lesson 7.1** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
+Chapter 7, Make It Feel Finished. This branch is the project at the **end of lesson 7.2** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
 
-Starting lesson 7.2? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-7.1.zip), unzip it, and open `project.godot` in Godot 4.7.2.
+Starting lesson 7.3? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-7.2.zip), unzip it, and open `project.godot` in Godot 4.7.2.
 
-[← lesson 6.3](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-6.3) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 7.2 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-7.2)
+[← lesson 7.1](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-7.1) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 7.3 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-7.3)
 
-The game now opens on a title screen, every scene change fades through black, and a run can be paused, with the codex and the pause menu sharing the Escape key.
+Sound effects and music get their own buses, music keeps playing across scene changes and fades between a calm and a combat track, it ducks on a room clear and on death, and the pause menu has volume sliders that are saved with the Forge progress.
 
 
 ## Files added
-- `Scenes/TitleScreen.tscn`: Center (full rect) > VBox > Title ("THE LAST FORGE"), StartButton ("Start"), QuitButton ("Quit")
-- `Scripts/TitleScreen.gd` (and its `.uid`): the glowing title, Start goes to the run through `Transitions`, Quit fades out and quits
-- `Scripts/Transitions.gd` (and its `.uid`): autoload on a CanvasLayer at layer 128 with a ColorRect built in code; `change_scene()` (fade, busy flag, recovers from a bad path), `reload_scene()`, `fade_out_then()`, `is_busy()`
+- `default_bus_layout.tres`: SFX (about -4 dB) and Music (about -12 dB) buses next to Master
 
 ## Files changed
-- `project.godot`: `Transitions` autoload; the main scene is now `Scenes/TitleScreen.tscn`
-- `Scripts/HUD.gd`: Retry and Forge go through `Transitions`; `_toggle_pause()` and `_toggle_codex()`; Tab and Escape in `_unhandled_input()` (Escape closes the codex first, does nothing on the reward or death screen); `_close_codex()` removed; the pause buttons call `_toggle_pause`, `_on_restart` and `_on_title`
-- `Scenes/HUD.tscn`: a `PausePanel` (full rect) with a Backdrop and a VBoxContainer of three buttons (RESUME, RESTART, Return To title Screen); the death screen's FORGE button moved below RUN AGAIN; `OverloadPulse` hidden (its eye is switched off while the pause panel is built)
-- `Scripts/Hub.gd`: Start Run goes through `Transitions` to `res://Scenes/CombatRoom.tscn`; unlock buttons ignore presses during a fade
+- `project.godot`: `audio/buses/default_bus_layout` points at the new layout
+- `Scripts/AudioManager.gd`: `BUS_BASE_DB`; pickup, upgrade and click sounds; the pool plays on the SFX bus; a warning for a missing sound file; `MUSIC` / `MUSIC_DB`, a music player on the Music bus, `play_music()` with a fade, `duck_music()` with a token, `apply_mix()`
+- `Scripts/MetaProgression.gd`: `audio_settings`, loaded and saved in an `[audio]` section, `set_audio_setting()`, `apply_mix()` after loading
+- `Scripts/HUD.gd`: a loop in `_ready()` that sets up the master, sfx and music sliders from the save and saves every change
+- `Scenes/HUD.tscn`: the pause VBox renamed to `VBox`, spaced out, with an `Audio` box (MasterLabel, master, Sfxlabel, sfx, MusicLabel, music)
+- `Scripts/RoomController.gd`: combat music on start, the upgrade sound when a card is taken, a music duck on room clear
+- `Scripts/PlayerController.gd`: a music duck when the player dies
+- `Scripts/TitleScreen.gd`, `Scripts/Hub.gd`: calm music
+- `Assets/Audio/music_calm.wav.import`, `Assets/Audio/music_combat.wav.import`: Loop Mode Forward, so the music loops
 
 ## Good to know
-- The fixes shown at the end of the lesson are already in: the title screen's Full Rect and text, the title as the main scene, the Start and Start Run paths (`res://Scenes/CombatRoom.tscn`), the HUD's title path (`res://Scenes/TitleScreen.tscn`), the button labels and the Forge button moved below RUN AGAIN.
-- The fixes at the end also add `$GameOver/Forge.pressed.connect(_on_forge)` to `HUD._ready()`. You already have it from 6.3, so skip that step: connecting it twice is an error. (Earlier in the 7.1 video the line is missing from `_ready()`; it was removed off camera before the recording.)
-- Known at this point, as on screen: hiding `OverloadPulse` in the scene tree also hides it in the game, because `HUD.gd` only changes its colour. From here the low-health pulse from 6.1 doesn't show. Turn its eye back on if you want the pulse.
-- As in the video, the pause panel's container is still named `VBoxContainer` while the code looks for `PausePanel/VBox/...`. Until 7.2 renames it to `VBox`, the HUD prints "Node not found: PausePanel/VBox/Resume" when a run starts and the three pause buttons don't respond. Escape still pauses and resumes. Rename the node now if you like; 7.2 does it at the end.
+- The two fixes shown later in this lesson are already in: Loop Mode Forward on both music files (without it the track stops after 24 seconds), and the save order in `MetaProgression.save_game()`. The audio values are now written before `cfg.save()`; in the first version of the video they were set after the save and never reached the file.
+- The pause buttons read RESUME and RESTART because of the fix at the end of 7.1. The video was recorded before that fix and still shows RUN AGAIN.
+- The slider nodes must be named exactly `master`, `sfx` and `music` (lowercase), because the code builds their paths from those keys.
 
 ## Build this part yourself
 
 The same game is a set of interactive quests on CodingQuests: you write each system yourself and your code gets
-checked. The whole controller quest is free, no account needed: https://codingquests.io/roguelike?utm_source=github&utm_medium=readme&utm_campaign=fcc_2d_roguelike&utm_content=runloop
+checked. The whole controller quest is free, no account needed: https://codingquests.io/roguelike?utm_source=github&utm_medium=readme&utm_campaign=fcc_2d_roguelike&utm_content=audio
 
 ## Requirements
 

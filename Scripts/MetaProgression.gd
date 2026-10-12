@@ -13,11 +13,12 @@ const NAMES := {
 	"swift":   "Fleet Boots — start +8% movement speed",
 }
 
+var audio_settings := {"master": 0.9, "sfx": 0.9, "music": 0.55}
 
 func _ready() -> void:
 	# Autoload: this runs before any scene exists.
 	load_game()
-	
+	AudioManager.apply_mix(audio_settings)
 	
 	
 func load_game() -> void:
@@ -31,18 +32,20 @@ func load_game() -> void:
 	total_essence = maxi(0, int(cfg.get_value("meta", "essence", 0)))
 	var u = cfg.get_value("meta", "unlocks", {})
 	unlocks = u if u is Dictionary else {}
-
+	for key in audio_settings:
+		audio_settings[key] = clampf(float(cfg.get_value("audio", key, audio_settings[key])), 0.0, 1.0)
 
 func save_game() -> void:
 	# One section, two keys, write.
 	var cfg := ConfigFile.new()
 	cfg.set_value("meta", "essence", total_essence)
 	cfg.set_value("meta", "unlocks", unlocks)
+	for key in audio_settings:
+		cfg.set_value("audio", key, audio_settings[key])
 	var error := cfg.save(SAVE_PATH)
 	if error != OK:
 		# error_string turns the code into words you can read in the output.
 		push_error("Could not save Forge progress: %s" % error_string(error))
-
 func bank_run(essence: int) -> void:
 	total_essence += maxi(0, essence)
 	# Saved on the spot, so a crash after the death screen can't lose it.
@@ -69,3 +72,10 @@ func buy(id: String) -> bool:
 	save_game()
 	# Whether it happened, so the Hub knows whether to play the sound.
 	return true
+	
+func set_audio_setting(key: String, value: float) -> void:
+	if not audio_settings.has(key):
+		return
+	audio_settings[key] = clampf(value, 0.0, 1.0)
+	AudioManager.apply_mix(audio_settings)
+	save_game()

@@ -26,7 +26,7 @@ func register_camera(cam: Camera2D) -> void:
 	camera = cam
 
 func shake_camera(amount: float) -> void:
-	if camera and camera.has_method("add_trauma"):
+	if is_instance_valid(camera) and camera.has_method("add_trauma"):
 		camera.add_trauma(amount)
 	
 

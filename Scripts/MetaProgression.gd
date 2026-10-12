@@ -5,6 +5,15 @@ const SAVE_PATH := "user://forge_save.cfg"
 var total_essence: int = 0
 var unlocks: Dictionary = {}
 
+const COSTS := {"daggers": 60, "vigor": 40, "honed": 35, "swift": 30}
+const NAMES := {
+	"daggers": "Twin Fangs — unlock a 3rd weapon",
+	"vigor":   "Vigor — start with +25 max HP",
+	"honed":   "Honed Edge — start with +6 quick damage",
+	"swift":   "Fleet Boots — start +8% movement speed",
+}
+
+
 func _ready() -> void:
 	# Autoload: this runs before any scene exists.
 	load_game()
@@ -38,3 +47,25 @@ func bank_run(essence: int) -> void:
 	total_essence += maxi(0, essence)
 	# Saved on the spot, so a crash after the death screen can't lose it.
 	save_game()
+
+func cost(id: String) -> int:
+	# 999999 for an id that isn't in the table: a typo is unaffordable, not free.
+	return int(COSTS.get(id, 999999))
+	
+func is_unlocked(id: String) -> bool:
+	# Reads the saved dictionary. false if that key has never been written.
+	return bool(unlocks.get(id, false))
+
+func can_buy(id: String) -> bool:
+	# Three checks: a real id, not already owned, and you can afford it.
+	return COSTS.has(id) and not is_unlocked(id) and total_essence >= cost(id)
+
+func buy(id: String) -> bool:
+	if not can_buy(id):
+		return false
+	# Subtract, mark it owned, save straight away.
+	total_essence -= cost(id)
+	unlocks[id] = true
+	save_game()
+	# Whether it happened, so the Hub knows whether to play the sound.
+	return true

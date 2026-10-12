@@ -163,3 +163,11 @@ offset_top = 445.0
 offset_right = 701.0
 offset_bottom = 506.0
 text = "RUN AGAIN"
+
+[node name="Forge" type="Button" parent="GameOver" unique_id=167603374]
+layout_mode = 0
+offset_left = 486.0
+offset_top = 445.0
+offset_right = 701.0
+offset_bottom = 506.0
+text = "RUN AGAIN"

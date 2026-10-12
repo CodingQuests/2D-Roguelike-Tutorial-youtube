@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://c0pk23nhk8ci2"]
+
+[ext_resource type="Script" uid="uid://bt2a8weuhnub0" path="res://Scripts/Hub.gd" id="1_ye28g"]
+
+[node name="Hub" type="Control" unique_id=1284167478]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ye28g")
+
+[node name="Essence" type="Label" parent="." unique_id=629191307]
+layout_mode = 0
+offset_left = 816.0
+offset_top = 105.0
+offset_right = 856.0
+offset_bottom = 128.0
+text = "Ess: "
+
+[node name="Unlocks" type="VBoxContainer" parent="." unique_id=404308539]
+layout_mode = 0
+offset_left = 467.0
+offset_top = 208.0
+offset_right = 645.0
+offset_bottom = 417.0
+
+[node name="daggers" type="Button" parent="Unlocks" unique_id=1414819186]
+layout_mode = 2
+text = "daggers"
+
+[node name="vigor" type="Button" parent="Unlocks" unique_id=1959838150]
+layout_mode = 2
+text = "vigor"
+
+[node name="honed" type="Button" parent="Unlocks" unique_id=970830861]
+layout_mode = 2
+text = "honed"
+
+[node name="swift" type="Button" parent="Unlocks" unique_id=394481889]
+layout_mode = 2
+text = "swift"
+
+[node name="StartRun" type="Button" parent="." unique_id=1204307892]
+layout_mode = 0
+offset_left = 483.0
+offset_top = 484.0
+offset_right = 582.0
+offset_bottom = 536.0
+text = "Start Run"

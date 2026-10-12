@@ -52,6 +52,7 @@ func _ready() -> void:
 	$CodexPanel.visible = false
 	game_over.visible = false
 	$GameOver/Retry.pressed.connect(_on_retry)
+	$GameOver/Forge.pressed.connect(_on_forge)
 func _process(_delta: float) -> void:
 	if _game_over or _leaving or get_tree().paused:
 		return
@@ -205,4 +206,16 @@ func _count_up(label: Label, target: int, prefix: String) -> void:
 		func(v: float) -> void: label.text = "%s%d" % [prefix, int(v)],
 		0.0, float(target), 0.6
 	)
+
+func _on_forge() -> void:
+	if _leaving:
+		return
+	_leaving = true
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	var error := get_tree().change_scene_to_file("res://Hub.tscn")
+	if error != OK:
+		_leaving = false
+		get_tree().paused = true
+		push_error("Forge load failed: %s" % error_string(error))
 	

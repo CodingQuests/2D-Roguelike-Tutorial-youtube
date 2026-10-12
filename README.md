@@ -1,29 +1,30 @@
-# The Last Forge · Lesson 6.2: Dying properly
+# The Last Forge · Lesson 6.3: Unlocks that widen, not unlocks that inflate
 
-Chapter 6, Make Them Want Another Run. This branch is the project at the **end of lesson 6.2** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
+Chapter 6, Make Them Want Another Run. This branch is the project at the **end of lesson 6.3** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
 
-Starting lesson 6.3? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-6.2.zip), unzip it, and open `project.godot` in Godot 4.7.2.
+Starting lesson 7.1? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-6.3.zip), unzip it, and open `project.godot` in Godot 4.7.2.
 
-[← lesson 6.1](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-6.1) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 6.3 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-6.3)
+[← lesson 6.2](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-6.2) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 7.1 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-7.1)
 
-Kills build a combo, dying slows the world and brings up a death screen with the run's summary and the essence banked, Retry starts a fresh run, and the essence total is saved to a file that survives closing the game.
+Banked essence buys four permanent unlocks at the Forge (Twin Fangs, Vigor, Honed Edge, Fleet Boots), each bought once, saved, and applied once when a new player starts. The death screen gets a button that takes you to the Forge.
 
 
 ## Files added
-- `Scripts/MetaProgression.gd` (and its `.uid`), an autoload: `SAVE_PATH` is `user://forge_save.cfg`; `total_essence`, `unlocks`; `load_game()`, `save_game()` (ConfigFile, section `meta`) and `bank_run()`
+- `Hub.tscn` (at the project root): the Forge screen, a full-rect Control with an `Essence` label, an `Unlocks` VBoxContainer holding four buttons named `daggers`, `vigor`, `honed` and `swift`, and a `StartRun` button
+- `Scripts/Hub.gd` (and its `.uid`): connects each unlock button with `bind(id)`, `_refresh()` shows the essence, each name and price, greys out what you own or can't afford and ticks what you own, and `_on_unlock_pressed()` buys
 
 ## Files changed
-- `project.godot`: MetaProgression added to the autoloads
-- `Scripts/GameManager.gd`: `COMBO_WINDOW` (3 s), `combo`, `combo_timer` and a `_process()` that runs the window down; `register_kill()`, `break_combo()`, `start_run()` (fresh `run_stats`, time scale and pause reset, start time stamped) and `get_run_time()`
-- `Scripts/RoomController.gd`: `GameManager.start_run()` at the top of `_ready()`; `_physics_process()` returns if the player is gone or dead; `_on_enemy_defeated()` registers the kill, counts it, and adds 1 essence (3 more for a corrupted enemy)
-- `Scripts/PlayerController.gd`: `_dead`; getting hurt breaks the combo (`_on_hurt`); `_on_died()` stops the player and the weapon, slows the world to quarter speed for 1.2 s and asks the HUD for the death screen; `_physics_process()` returns while dead
-- `Scenes/HUD.tscn`: `GameOver` (Full Rect, Process Mode Always) with `Backdrop`, `Summary`, `Essence` and a `Retry` button reading RUN AGAIN
-- `Scripts/HUD.gd`: the three GameOver nodes; `_ready()` hides the death screen and connects Retry; `_format_time()`; `show_game_over()` banks the run's essence, fills the summary (floor, rooms, kills, best combo, time), counts the essence up, then pauses after a 1.2 s real-time wait; `_on_retry()` reloads the scene; `_count_up()`
+- `Scripts/MetaProgression.gd`: `COSTS` (daggers 60, vigor 40, honed 35, swift 30) and `NAMES`; `cost()`, `is_unlocked()`, `can_buy()` and `buy()`, which saves straight away
+- `Scripts/WeaponController.gd`: `set_available()` replaces the weapon list and goes back to the first slot
+- `Scripts/PlayerController.gd`: `_apply_meta_unlocks()`, called at the end of `_ready()`: Twin Fangs joins the weapon list, Vigor adds 25 max health (and fills it), Honed Edge adds 6 quick damage, Fleet Boots multiplies speed by 1.08
+- `Scripts/GameManager.gd`: `shake_camera()` checks `is_instance_valid(camera)`, because the autoload outlives the scene and its camera
+- `Scenes/HUD.tscn`: `GameOver/Forge`, a duplicate of the Retry button
+- `Scripts/HUD.gd`: `_on_forge()` changes the scene to `res://Hub.tscn`; `_ready()` connects it with `$GameOver/Forge.pressed.connect(_on_forge)`, under the Retry connection (typed at the end of the video, with a caption)
 
 ## Good to know
-- The run clock counts real time since the run started, so time spent paused counts too.
-- `show_game_over(immediate_pause)` already has the branch that lesson 7.3's victory screen uses.
-- The save file lives in the game's user data folder (Project > Open User Data Folder), not in the project.
+- To try the Forge, open `Hub.tscn` and press F6 (Run Current Scene). The main scene is still the combat room; lesson 7.1 adds a title screen and makes it the main scene.
+- Known at this point: Start Run loads `res://Main.tscn`, which doesn't exist, so it does nothing but print an error. Fixed in lesson 7.1.
+- Known at this point: the Forge button is an exact copy of Retry, with the same RUN AGAIN text and the same position, so it sits on top of Retry and clicking RUN AGAIN takes you to the Forge. Fixed in lesson 7.1.
 
 ## Build this part yourself
 

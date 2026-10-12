@@ -74,6 +74,7 @@ func _ready() -> void:
 	GameManager.register_player(self)
 	hurtbox.hurt.connect(_on_hurt)
 	health.died.connect(_on_died)
+	_apply_meta_unlocks()
 func _physics_process(delta: float) -> void:
 	if _dead:
 		return
@@ -394,3 +395,26 @@ func _on_died() -> void:
 	# A HUD without the death screen yet gets skipped, not a crash.
 	if GameManager.hud and GameManager.hud.has_method("show_game_over"):
 		GameManager.hud.show_game_over()
+
+
+func _apply_meta_unlocks() -> void:
+	# The base list. Daggers only if owned.
+	var weapons := [WeaponController.SWORD, WeaponController.SPEAR]
+	if MetaProgression.is_unlocked("daggers"):
+		weapons.append(WeaponController.DAGGERS)
+	# Resets the slot, so you always start on the sword.
+	weapon.set_available(weapons)
+	if MetaProgression.is_unlocked("vigor"):
+		# Raise the max, then fill current to match. Otherwise you start at
+		# 100 of 125 and the bar reads as damaged.
+		health.set_max_health(health.max_health + 25.0)
+		health.heal(25.0)
+	if MetaProgression.is_unlocked("honed"):
+		# Six flat on quick damage.
+		quick_bonus_damage += 6.0
+	if MetaProgression.is_unlocked("swift"):
+		# Multiply, not add: 8% of whatever the speed already is, not a fixed number.
+		move_speed_mult *= 1.08
+	on_stats_changed()
+	
+	

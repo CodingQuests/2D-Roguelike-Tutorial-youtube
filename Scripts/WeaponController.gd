@@ -266,3 +266,10 @@ func _throw_waves(aim: Vector2) -> void:
 		# After add_child. Out of the tree, global position means nothing.
 		w.global_position = global_position
 		
+func set_available(list: Array) -> void:
+	# A call that passes nothing can't leave the player with no weapon at all.
+	if list.is_empty():
+		return
+	# Our own copy, so nothing still holding the original can change it under us.
+	available_weapons = list.duplicate()
+	_slot = 0

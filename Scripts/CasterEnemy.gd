@@ -83,3 +83,12 @@ func _fire() -> void:
 	container.add_child(proj)
 	proj.global_position = global_position + _aim_dir * 12.0
 	proj.setup(_aim_dir, projectile_damage, self)
+
+func make_corrupted() -> void:
+	# The base guard stops the stats stacking. Same guard here, then the base
+	# version, then the one field it doesn't know about.
+	if is_corrupted:
+		return
+	super.make_corrupted()
+	projectile_damage *= 1.3
+	

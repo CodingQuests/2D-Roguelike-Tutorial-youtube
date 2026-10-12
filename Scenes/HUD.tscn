@@ -111,3 +111,12 @@ offset_top = 494.0
 offset_right = 630.0
 offset_bottom = 564.0
 text = "CLOSE"
+
+[node name="OverloadPulse" type="ColorRect" parent="." unique_id=1192527514]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)

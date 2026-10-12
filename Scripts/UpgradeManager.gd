@@ -160,7 +160,7 @@ func _weighted_sample(pool: Array, count: int) -> Array:
 
 func _owned_unique_ids() -> Array:
 	var ids: Array = []
-	var p := GameManager.player
+	var p: Node = GameManager.player
 	# Null guard first: this can run before a player exists.
 	if p == null:
 		return ids

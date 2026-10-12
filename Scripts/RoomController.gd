@@ -30,8 +30,8 @@ func _ready() -> void:
 	randomize()
 	await get_tree().process_frame
 	_enter_floor(1)
-	floor_layer.generate()
-	player.global_position = floor_layer.entrance_center()
+
+
 
 
 func _physics_process(_delta: float) -> void:
@@ -49,6 +49,9 @@ func _physics_process(_delta: float) -> void:
 		_on_enter_room(here)
 	
 func _on_enemy_defeated(_enemy: Node) -> void:
+	if _active_room < 0 or not is_instance_valid(player) or not player.health.is_alive():
+		return
+	
 	if randf() < 0.55: 
 		_drop_gold(_enemy.global_position, randi_range(1, 3))
 	_alive -= 1
@@ -121,17 +124,19 @@ func _set_status(text: String, auto_hide: float) -> void:
 		GameManager.hud.show_status(text, auto_hide)
 		
 func _enter_floor(depth: int) -> void:
+	_active_room = -1
+	_clear_floor_container(enemies)
+	_clear_floor_container($Projectiles)
+	_clear_floor_container(pickups)
+	_stocked.clear()
+	_open_stands.clear()
 	_floor_depth = depth
 	GameManager.run_stats["floor"] = depth
 	_alive = 0
-	for c in pickups.get_children():
-		c.queue_free()
-	_stocked.clear()
-	_open_stands.clear()
 	floor_layer.generate(depth)
 	player.global_position = floor_layer.entrance_center()
+	player.reset_floor_motion()
 	_current_room = -2
-	_active_room = -1
 	_set_status("Floor %d — clear the boss room" % depth, 2.0)
 	var mm := get_tree().get_first_node_in_group("Minimap")
 	if mm and mm.has_method("set_dungeon"):
@@ -319,3 +324,12 @@ func _on_altar_take(ped: ItemPedestal, item_def: Dictionary) -> void:
 	# _on_treasure_take() already does the apply, the dismiss and the pop.
 	_on_treasure_take(ped, item_def)
 
+
+func _clear_floor_container(container: Node) -> void:
+	for child in container.get_children():
+		if child.has_signal("defeated") and child.is_connected("defeated", _on_enemy_defeated):
+			child.disconnect("defeated", _on_enemy_defeated)
+		# Remove now, free at the end of the frame. No old collision/AI in the new floor.
+		container.remove_child(child)
+		child.queue_free()
+		

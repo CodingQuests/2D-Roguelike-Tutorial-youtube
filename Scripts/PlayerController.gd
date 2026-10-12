@@ -353,3 +353,16 @@ func _blood_siphon() -> void:
 	Juice.floating_text(get_tree().current_scene, global_position,
 		"+%d" % int(health.current_health - before), Color(0.4, 1.0, 0.5), 14)
 	
+
+func reset_floor_motion() -> void:
+	_is_dashing = false
+	_dash_timer = 0.0
+	_phase_timer = 0.0
+	velocity = Vector2.ZERO
+	_knockback = Vector2.ZERO
+	_last_good_pos = global_position
+	_sync_invulnerability()
+	sprite_2d.modulate = Color.WHITE
+	player_sprite.modulate = Color.WHITE
+	
+	

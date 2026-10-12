@@ -5,7 +5,7 @@ const UPGRADE_CARD := preload("res://Scenes/UpgradeCard.tscn")
 @onready var health_bar: StatBar = $HealthBar
 @onready var dash_bar: StatBar = $DashBar
 @onready var corruption_bar: StatBar = $CorruptionBar
-
+@onready var overload_pulse: ColorRect = $OverloadPulse
 @onready var status_label: Label = $StatusLabel
 @onready var upgrade_panel: Control = $UpgradePanel
 @onready var _card_row: HBoxContainer = $UpgradePanel/Cards
@@ -15,7 +15,9 @@ const UPGRADE_CARD := preload("res://Scenes/UpgradeCard.tscn")
 var _player: PlayerController = null
 var _status_token := 0
 var _upgrade_callback: Callable
-
+var _time: float = 0.0
+var _game_over: bool = false
+var _leaving: bool = false
 func _skip_upgrade() -> void:
 	# The card lambda with no card: same visible guard, hide the panel, then
 	# call the stored callback with an empty dictionary.
@@ -46,14 +48,32 @@ func _ready() -> void:
 	$CodexPanel/Close.pressed.connect(_close_codex)
 	$CodexPanel.visible = false
 func _process(_delta: float) -> void:
+	if _game_over or _leaving or get_tree().paused:
+		return
 	if not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player")
 		return
+	if _player == null:
+		return
+	
+	
 	health_bar.set_ratio(_player.health.get_ratio())
 	corruption_bar.set_ratio(_player.corruption / _player.max_corruption)
 	dash_bar.set_ratio(_player.get_dash_ratio())
 	tier_label.text = _player.get_corruption_tier()
 	gold_label.text = "%d g" % int(GameManager.run_stats.get("gold", 0))
+	
+	_time = Time.get_ticks_msec() / 1000.0
+	var hp := _player.health.get_ratio()
+	if hp < 0.3:
+		# urgency is 0 at 30% health, 1 at dead. It drives both numbers below:
+		# alpha 0.10 up to 0.24, sine speed 4 up to 10. Stronger and faster together.
+		var urgency := 1.0 - (hp / 0.3)
+		var a := (0.10 + 0.14 * urgency) * (0.5 + 0.5 * sin(_time * (4.0 + 6.0 * urgency)))
+		overload_pulse.color = Color(0.7, 0.0, 0.1, a)
+	else:
+		# Back to zero, or the last red frame stays up after you heal.
+		overload_pulse.color.a = 0.0
 func show_status(text: String, auto_hide: float = 1.5) -> void:
 	_status_token += 1
 	var token := _status_token

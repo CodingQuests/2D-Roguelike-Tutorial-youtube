@@ -1,7 +1,7 @@
 class_name GruntEnemy
 extends EnemyBase
 
-@export var attack_range: float = 45.0
+@export var attack_range: float = 16.0
 @export var attack_cooldown: float = 1.1
 @export var attack_active_time: float = 0.14
 @export var recovery_time: float = 0.45
@@ -45,7 +45,7 @@ func _enter_attack() -> void:
 	state = State.ATTACK
 	state_timer = attack_active_time
 	var dir := dir_to_player()
-	enable_attack_area(dir * 24.0, 22.0)
+	enable_attack_area(dir * 6.0, 7.0)
 	velocity = dir * 120.0
 
 

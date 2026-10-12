@@ -1,37 +1,39 @@
-# The Last Forge · Lesson 5.5: Gold, shops and the deal you shouldn't take
+# The Last Forge · Lesson 6.1: A HUD that shows less
 
-Chapter 5, Make Every Run Different. This branch is the project at the **end of lesson 5.5** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
+Chapter 6, Make Them Want Another Run. This branch is the project at the **end of lesson 6.1** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
 
-Starting lesson 6.1? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-5.5.zip), unzip it, and open `project.godot` in Godot 4.7.2.
+Starting lesson 6.2? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-6.1.zip), unzip it, and open `project.godot` in Godot 4.7.2.
 
-[← lesson 5.4](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-5.4) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 6.1 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-6.1)
+[← lesson 5.5](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-5.5) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 6.2 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-6.2)
 
-Enemies drop gold coins that fly to you, shown on the HUD. Treasure rooms offer three free items on pedestals (taking one removes the others), shops sell three for gold, altars trade 18% of your max health for one of two items. Three new items fill an active slot used with E: Forge Pulse, Phase Step and Blood Siphon. Coins and room stock are cleared when you go down a floor.
+A checkpoint first: a floor change that leaves nothing behind, no rewards for a dead player, the caster's own corrupted bonus and the grunt's final numbers. Then the screen pulses red when your health drops below 30 percent, faster the closer you are to dying.
 
 
 ## Files added
-- `Scripts/Pickup.gd` (and its `.uid`): `class_name Pickup`, an Area2D with a toss velocity, a magnet pull toward the player and a one-time `_collect()` for subclasses
-- `Scripts/GoldPickup.gd` (and its `.uid`) and `Scenes/GoldPickup.tscn`: extends Pickup, adds 1 gold and plays the pickup sound (layer 8 Pickups, mask 2 PlayerBody, a yellow-tinted potion sprite)
-- `Scripts/ItemPedestal.gd` (and its `.uid`) and `Scenes/ItemPedestal.tscn`: `class_name ItemPedestal`, an Area2D stand (radius 28, layer 8, mask 2) with a "Press F" prompt, a rarity-coloured orb and a title/price label; F emits `chosen`; `refuse()` and `consume()`
+- None
 
 ## Files changed
-- `Scripts/GameManager.gd`: `register_gold()` and `spend_gold()`
-- `Scripts/RoomController.gd`: `GOLD_PICKUP`, `PEDESTAL`, `SHOP_BASE_PRICE`, `pickups`, `_stocked`, `_open_stands`; a 55% chance of 1 to 3 coins per kill (`_drop_gold()`); treasure, shop and altar rooms (`_make_pedestal()`, `_shop_price()`, `_place_pedestals()`, `_open_treasure()`, `_on_treasure_take()`, `_stock_shop()`, `_on_shop_buy()`, `_open_altar()`, `_on_altar_take()`); `_enter_floor()` frees the coins and clears the stock
-- `Scripts/PlayerController.gd`: the active slot (`active_item`, `active_name`, `active_cooldown`, `_active_cd_timer`), `_phase_timer`, `set_active_item()`, `_handle_active_input()` (E), `use_active()`, `_forge_pulse()`, `_phase_step()` (uses `test_move` so it stops at walls and gates), `_blood_siphon()`, `_sync_invulnerability()` (also used when the dash ends)
-- `Scripts/UpgradeManager.gd`: Forge Pulse, Phase Step and Blood Siphon (unique) with their apply functions
-- `Scripts/HUD.gd`: `gold_label` shows `"%d g"` of the run's gold
-- `Scenes/HUD.tscn`: `GoldLabel` under the bars, top left
+- `Scripts/RoomController.gd`: `_ready()` no longer generates the floor a second time after `_enter_floor(1)`; new `_clear_floor_container()`, which disconnects `defeated` and removes every child of a container; `_enter_floor()` clears Enemies, Projectiles and Pickups, then calls `player.reset_floor_motion()`; `_on_enemy_defeated()` returns early when no fight is running or the player is dead
+- `Scripts/PlayerController.gd`: `reset_floor_motion()` stops the dash, phase step, velocity and knockback, resets the safe position and clears the dash tint
+- `Scripts/GruntEnemy.gd`: `attack_range` 16 and a smaller hit, `enable_attack_area(dir * 6.0, 7.0)`, the numbers in the grunt code the video shows
+- `Scenes/GruntEnemy.tscn`: the grunt scene's own Attack Range is 16 as well (it stored 45, which would override the script)
+- `Scripts/CasterEnemy.gd`: `make_corrupted()` calls `super.make_corrupted()` and then raises `projectile_damage`
+- `Scripts/UpgradeManager.gd`: `var p: Node = GameManager.player` in `_owned_unique_ids()`
+- `Scenes/HUD.tscn`: new `OverloadPulse` ColorRect (Full Rect, alpha 0, Mouse Filter Ignore)
+- `Scripts/HUD.gd`: `overload_pulse`, `_time`, `_game_over`, `_leaving`; `_process()` returns while paused (or after game over or while leaving), finds the player again if needed, updates the bars and labels, then drives the red pulse
 
 ## Good to know
-- The pickup, upgrade and click sounds stay silent until lesson 7.2 adds them (`AudioManager.play()` ignores names it doesn't know).
-- The video types `GOLD_PICKUP` and `PEDESTAL` with `res://scenes/` (small s). This branch uses `res://Scenes/GoldPickup.tscn` and `res://Scenes/ItemPedestal.tscn`, as the correction in lesson 3.3 asks. Lesson 6.1 corrects the video's lines.
-- When a sword hit kills an enemy and it drops coins, the Debugger shows "Can't change this state while flushing queries": `_drop_gold()` adds the coin Area2Ds in the middle of the physics callback. The coins still drop and can be picked up; the course keeps this code as it is.
-- Known at this point, fixed in lesson 6.1: enemies and projectiles from the old floor aren't removed when you go down, and `_on_enemy_defeated` doesn't check the player is alive.
+- The video starts by giving five scene paths a capital S (in `RoomController.gd`, `HUD.gd` and `WeaponController.gd`). Yours already use `res://Scenes/`, as the correction in lesson 3.3 asked, so skip that step.
+- The video then swaps the code of `GruntEnemy.gd` and `CasterEnemy.gd` and points `CasterEnemy.tscn` at `CasterEnemy.gd`. You did that in lesson 3.3 and checked it in 3.6 (card 05), so skip the swap. Do take the grunt's two numbers from the code on screen (range 16, `enable_attack_area(dir * 6.0, 7.0)`), and set Attack Range to 16 on the root of `GruntEnemy.tscn` in the Inspector too.
+- The caption that adds `_base_sprite_scale = sprite.scale` to `EnemyBase._ready()`: you already did it in 3.6 (card 08), so skip that step. One copy is enough.
+- `_game_over` and `_leaving` stay false in this lesson. Lesson 6.2 switches them on.
+- The repairs to the whirlwind size, the chain skipping dead enemies and chill reading the AI's own velocity are already in from lesson 5.4, and the boss in the farthest room from lesson 4.3.
+- On the very first import Godot may print `Cannot infer the type of "p" variable` for `UpgradeManager.gd` (`_player_corruption()` still uses `var p := GameManager.player`). Opening the project a second time is clean, and the game runs.
 
 ## Build this part yourself
 
 The same game is a set of interactive quests on CodingQuests: you write each system yourself and your code gets
-checked. The whole controller quest is free, no account needed: https://codingquests.io/roguelike?utm_source=github&utm_medium=readme&utm_campaign=fcc_2d_roguelike&utm_content=loot
+checked. The whole controller quest is free, no account needed: https://codingquests.io/roguelike?utm_source=github&utm_medium=readme&utm_campaign=fcc_2d_roguelike&utm_content=hud
 
 ## Requirements
 

@@ -14,7 +14,7 @@ radius = 18.0
 
 [node name="GruntEnemy" unique_id=522414560 instance=ExtResource("1_n6dq6")]
 script = ExtResource("2_mobxy")
-attack_range = 45.0
+attack_range = 16.0
 attack_cooldown = 1.1
 attack_active_time = 0.14
 recovery_time = 0.45

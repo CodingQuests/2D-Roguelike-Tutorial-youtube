@@ -21,7 +21,7 @@ func try_register_hit(hurtbox: Node) -> bool:
 	if hit_once_per_attack and _hit_this_attack.has(hurtbox):
 		return false
 	_hit_this_attack.append(hurtbox)
-	hit_landed.emit(hurtbox)
 	return true
 	
-	
+func notify_hit(hurtbox: Node) -> void:
+	hit_landed.emit(hurtbox)

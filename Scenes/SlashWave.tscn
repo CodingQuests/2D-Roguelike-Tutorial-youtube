@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://cnotx14f3twlm"]
+
+[ext_resource type="Texture2D" uid="uid://dgc4f21ydqk2m" path="res://Assets/Tiles/tile_0129.png" id="1_3f572"]
+[ext_resource type="Script" uid="uid://c3a7p3r3gqqcl" path="res://Scripts/SlashWave.gd" id="1_a2x06"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hhunp"]
+
+[node name="SlashWave" type="Area2D" unique_id=188787801 groups=["hitbox"]]
+collision_layer = 32
+script = ExtResource("1_a2x06")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=889889372]
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_hhunp")
+
+[node name="Tile0129" type="Sprite2D" parent="." unique_id=412782604]
+rotation = 1.5707964
+texture = ExtResource("1_3f572")

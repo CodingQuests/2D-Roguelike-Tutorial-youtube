@@ -22,13 +22,28 @@ func _skip_upgrade() -> void:
 		return
 	upgrade_panel.visible = false
 	_upgrade_callback.call({})
-	
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	# Tab flips the panel, but not on a key repeat and not while the upgrade
+	# panel is up.
+	if event.is_action_pressed("codex") and not event.is_echo() and not upgrade_panel.visible:
+		var opened = not $CodexPanel.visible
+		# Rebuild the text only on the way open, then pause the tree with it.
+		if opened:
+			_refresh_codex()
+		$CodexPanel.visible = opened
+		get_tree().paused = opened
+		
+		
 func _ready() -> void:
 	GameManager.register_hud(self)
 	status_label.visible = false
 	upgrade_panel.visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	$UpgradePanel/Skip.pressed.connect(_skip_upgrade)
+	$CodexPanel/Close.pressed.connect(_close_codex)
+	$CodexPanel.visible = false
 func _process(_delta: float) -> void:
 	if not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player")
@@ -73,3 +88,24 @@ func show_upgrades(choices: Array, on_chosen: Callable) -> void:
 	# two lines in _ready() coming next.
 	upgrade_panel.visible = true
 	get_tree().paused = true
+
+func _refresh_codex() -> void:
+	var p: PlayerController = GameManager.player
+	if not is_instance_valid(p):
+		return
+	var lines: PackedStringArray = ["OWNED ITEMS"]
+	# One line per owned item, title and description.
+	for item in p.items:
+		lines.append("%s — %s" % [item["title"], item["desc"]])
+	# Then a blank line and the synergies. p.get("syn_" + id) reads a property
+	# by name, so the four booleans don't need four ifs.
+	lines.append("\nSYNERGIES")
+	for id in PlayerController.SYNERGY_DESCS:
+		if bool(p.get("syn_" + id)):
+			lines.append("%s — %s" % [id.to_upper(), PlayerController.SYNERGY_DESCS[id]])
+	$CodexPanel/BuildText.text = "\n".join(lines)
+	
+	
+func _close_codex() -> void:
+	$CodexPanel.visible = false
+	get_tree().paused = false

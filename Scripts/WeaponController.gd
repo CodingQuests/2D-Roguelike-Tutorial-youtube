@@ -3,6 +3,7 @@ extends Node2D
 
 
 enum State { IDLE, WINDUP, ACTIVE, RECOVERY }
+const SLASH_WAVE := preload("res://Scenes/SlashWave.tscn")
 
 @onready var weapon_sprite: Sprite2D = $WeaponSprite
 @onready var attack_hitbox: HitboxComponent = $AttackHitbox
@@ -46,8 +47,9 @@ const PROFILES := [
 ]
 var available_weapons: Array = [SWORD, SPEAR]
 var _slot: int = 0
-
+var _is_whirl := false
 var _base_weapon_rotation := 0.0
+
 func _profile() -> Dictionary:
 	return PROFILES[available_weapons[_slot]]
 	
@@ -115,6 +117,11 @@ func _begin_active() -> void:
 
 	var size: Vector2 = p["h_box"] if _current_is_heavy else p["q_box"]
 	var offset: float = float(p["h_off"]) if _current_is_heavy else float(p["q_off"])
+	_is_whirl = _current_is_heavy and _player.whirlwind
+	if _is_whirl:
+		var d := 150.0
+		size = Vector2(d, d)
+		offset = 0.0
 	(hitbox_shape.shape as RectangleShape2D).size = size
 	hitbox_shape.position = Vector2(offset, 0)
 	attack_hitbox.damage = _compute_damage()
@@ -125,7 +132,8 @@ func _begin_active() -> void:
 	if _player and _player.has_method("lunge"):
 		_player.lunge(aim, 210.0 if _current_is_heavy else 110.0)
 	
-	
+	if _player.echo_level > 0:
+		_throw_waves(global_transform.x.normalized())
 	_enable_hitbox()
 	Juice.squash(weapon_sprite, _base_weapon_scale, 0.2, 0.15)
 	_animate_swing()
@@ -169,9 +177,17 @@ func _on_hit_landed(_hurtbox: Node) -> void:
 	else:
 		GameManager.hit_stop(QUICK_HITSTOP)
 		GameManager.shake_camera(QUICK_SHAKE)
-
+	_apply_hit_effects(_hurtbox)
 
 func _animate_swing() -> void:
+	if _is_whirl:
+		weapon_sprite.rotation = _base_weapon_rotation
+		var wt := weapon_sprite.create_tween()
+		wt.tween_property(weapon_sprite, "rotation",
+			_base_weapon_rotation + TAU, _state_timer).set_trans(Tween.TRANS_QUAD)
+		wt.tween_property(weapon_sprite, "rotation", _base_weapon_rotation, 0.06)
+		return
+	
 	var arc := deg_to_rad(120) if _current_is_heavy else deg_to_rad(90)
 	var dur := _state_timer if _current_is_heavy else _state_timer + 0.08
 	weapon_sprite.rotation = _base_weapon_rotation - arc * 0.5
@@ -181,3 +197,72 @@ func _animate_swing() -> void:
 	tw.tween_property(weapon_sprite, "rotation", _base_weapon_rotation, 0.1)
 	
 	
+func _apply_hit_effects(hurtbox: Node) -> void:
+	var enemy := hurtbox.get_parent()
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	if _player.burn_dps > 0.0 and enemy.has_method("ignite"):
+		enemy.ignite(_player.burn_dps, 3.0)
+	if _player.chill_factor > 0.0 and enemy.has_method("chill"):
+		enemy.chill(_player.chill_factor, 2.0)
+	if _player.execute_threshold > 0.0 and enemy is EnemyBase:
+		if enemy.health.get_ratio() <= _player.get_execute_threshold():
+			enemy.die()
+	if _player.chain_count > 0:
+		_chain_to_nearby(enemy, _player.chain_count)
+	if _player.twin_strike and enemy is EnemyBase and enemy.health.is_alive():
+		enemy.take_damage(_compute_damage() * 0.5, _player.global_position)
+func _chain_to_nearby(origin: Node, count: int) -> void:
+	var hit := {origin: true}
+	var from: Node2D = origin
+	for i in range(count):
+		var best: Node2D = null
+		var best_d := 220.0
+		for e in get_tree().get_nodes_in_group("enemy"):
+			if not is_instance_valid(e) or e.is_queued_for_deletion() or hit.has(e):
+				continue
+			if not (e is EnemyBase) or e.state == EnemyBase.State.DEAD:
+				continue
+			
+			var d: float = from.global_position.distance_to(e.global_position)
+			if d < best_d:
+				best_d = d
+				best = e
+		if best == null:
+			return
+		hit[best] = true
+		if best.has_method("take_damage"):
+			best.take_damage(_compute_damage() * 0.5, from.global_position)
+		# Plasma synergy: chain bolts also ignite what they arc to.
+		if _player.syn_plasma and best.has_method("ignite"):
+			best.ignite(_player.burn_dps, 3.0)
+		# Next hop measures from the enemy just hit. A chain, not a burst.
+		from = best
+
+func _throw_waves(aim: Vector2) -> void:
+	var count: int = _player.echo_level
+	var as_ring: bool = _is_whirl and _player.syn_cyclone
+	# A cyclone whirlwind bumps the count to at least eight, spread round a full
+	# circle. Otherwise two or more get fanned across 36 degrees with lerpf.
+	if as_ring:
+		count = maxi(count * 4, 8)
+	for i in range(count):
+		var dir := aim
+		if as_ring:
+			dir = Vector2.RIGHT.rotated(TAU * float(i) / float(count))
+		elif count > 1:
+			dir = aim.rotated(deg_to_rad(lerpf(-18.0, 18.0, float(i) / float(count - 1))))
+		# configure() first, then copy burn and chill across. Three quarters
+		# damage, so the wave is a bit weaker than the sword.
+		var w := SLASH_WAVE.instantiate()
+		w.configure(dir, _compute_damage() * 0.75, _player)
+		w.burn_dps = _player.burn_dps
+		# Glacial: Echo + Frost makes the waves chill twice as hard.
+		w.chill_factor = _player.chill_factor * (2.0 if _player.syn_glacial else 1.0)
+		# Under the projectiles node if there is one, the current scene if not.
+		var container := get_tree().get_first_node_in_group("projectiles")
+		if container == null: container = get_tree().current_scene
+		container.add_child(w)
+		# After add_child. Out of the tree, global position means nothing.
+		w.global_position = global_position
+		

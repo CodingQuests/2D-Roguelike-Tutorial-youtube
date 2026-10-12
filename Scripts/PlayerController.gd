@@ -26,6 +26,17 @@ var move_speed_mult: float = 1.0
 var attack_cooldown_mult: float = 1.0
 var glass_damage_mult: float = 1.0
 var glass_taken_mult: float = 1.0
+var burn_dps: float = 0.0          # Ember Brand: damage over time
+var chill_factor: float = 0.0      # Frost Bite: slow on hit (0..0.85)
+var chain_count: int = 0           # Storm Coil: hit arcs to N nearby enemies
+var execute_threshold: float = 0.0 # Reaper's Mark: instakill below this HP ratio
+var echo_level: int = 0        # Echo Blade: each swing throws a slash wave
+var whirlwind: bool = false    # Maelstrom: heavy becomes a 360 spin
+var twin_strike: bool = false  # Twin Fang: every hit strikes twice
+var syn_plasma: bool = false       # chain bolts also ignite
+var syn_glacial: bool = false      # slash waves chill hard
+var syn_cyclone: bool = false      # whirlwind also throws waves outward
+var syn_harvest: bool = false      # execute threshold boosted
 
 var _last_good_pos := Vector2.ZERO
 var _is_dashing := false
@@ -41,6 +52,14 @@ const KNOCKBACK_DECAY := 1700.0
 const KNOCKBACK_TAKEN := 0.6      # the player is shoved less than enemies are
 
 var items: Array = []
+
+const SYNERGY_DESCS := {
+	"plasma":  "Chain bolts also ignite what they arc to",
+	"glacial": "Slash waves chill hard on contact",
+	"cyclone": "Whirlwind heavies throw slash waves outward",
+	"harvest": "Execute threshold greatly increased",
+}
+
 
 func _ready() -> void:
 	_last_good_pos = global_position
@@ -169,6 +188,7 @@ func apply_upgrade(def: Dictionary) -> void:
 	var fn: Callable = def["apply"]
 	fn.call(self)
 	items.append(def)
+	_resolve_synergies()
 	add_corruption(float(def.get("corruption", 0)))
 	
 func on_stats_changed() -> void:
@@ -229,4 +249,15 @@ func _on_tier_changed(tier: String) -> void:
 	Juice.impact(world, global_position, Color(0.5, 0.1, 0.6), 22, 1.8)
 	Juice.floating_text(world, global_position, tier.to_upper(), Color(0.85, 0.4, 1.0), 18)
 	
+	
+func _resolve_synergies() -> void:
+	syn_plasma  = has_item("ember_brand") and has_item("storm_coil")
+	syn_glacial = has_item("echo_blade")  and has_item("frost_bite")
+	syn_cyclone = has_item("echo_blade")  and has_item("whirlwind")
+	syn_harvest = has_item("reapers_mark") and has_item("ember_brand")
+	
+func get_execute_threshold() -> float:
+	# x1.6 with harvest on, x1 without, then clamped at 0.75: even the synergy
+	# can't execute something with three quarters of its health left.
+	return clampf(execute_threshold * (1.6 if syn_harvest else 1.0), 0.0, 0.75)
 	

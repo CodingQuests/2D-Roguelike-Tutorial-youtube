@@ -80,3 +80,27 @@ offset_top = 445.0
 offset_right = 701.0
 offset_bottom = 506.0
 text = "Take Nothing"
+
+[node name="CodexPanel" type="Control" parent="." unique_id=51879031]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BuildText" type="RichTextLabel" parent="CodexPanel" unique_id=1756784867]
+layout_mode = 0
+offset_left = 375.0
+offset_top = 186.0
+offset_right = 760.0
+offset_bottom = 394.0
+
+[node name="Close" type="Button" parent="CodexPanel" unique_id=1066927238]
+layout_mode = 0
+offset_left = 485.0
+offset_top = 494.0
+offset_right = 630.0
+offset_bottom = 564.0
+text = "CLOSE"

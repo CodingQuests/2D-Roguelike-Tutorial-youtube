@@ -31,6 +31,13 @@ func _on_area_entered(area: Area2D) -> void:
 	if area.has_method("try_register_hit"):
 		if not area.try_register_hit(self):
 			return
+	
+	if area.is_queued_for_deletion():
+		return
+	if health == null or not health.is_alive():
+		return
+		
+		
 	var incoming: float = area.damage * damage_multiplier
 	if health:
 		health.damage(incoming)
@@ -47,6 +54,9 @@ func _on_area_entered(area: Area2D) -> void:
 		if dir.length() < 0.01:
 			dir = Vector2.RIGHT.rotated(randf() * TAU)
 		_body.apply_knockback(dir.normalized(), area.knockback_force)
+	
+	if area.has_method("notify_hit"):
+		area.notify_hit(self)
 	if area.has_method("on_hurtbox_hit"):
 		area.on_hurtbox_hit()
 	

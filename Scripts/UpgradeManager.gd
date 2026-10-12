@@ -26,6 +26,21 @@ func _ready() -> void:
 		{"id": "cleansing_light", "title": "Cleansing Light", "rarity": "common",
 			"desc": "Purge 25 corruption from your weapon", "corruption": -25,
 			"apply": _apply_noop},
+		{"id": "ember_brand", "title": "Ember Brand", "rarity": "rare",
+		"desc": "Hits set enemies on fire (+6 burn/sec)", "corruption": 12, "apply": _apply_ember},
+		{"id": "frost_bite", "title": "Frost Bite", "rarity": "rare",
+		"desc": "Hits chill enemies, slowing them 30%", "corruption": 10, "apply": _apply_frost},
+		{"id": "storm_coil", "title": "Storm Coil", "rarity": "rare",
+		"desc": "Hits arc lightning to a nearby enemy", "corruption": 14, "apply": _apply_storm},
+		{"id": "reapers_mark", "title": "Reaper's Mark", "rarity": "cursed",
+		"desc": "Execute enemies below 14% HP", "corruption": 16, "apply": _apply_reaper},
+		{"id": "echo_blade", "title": "Echo Blade", "rarity": "rare", "unique": true,
+		"desc": "Every swing throws a slash wave (ranged!)", "corruption": 14, "apply": _apply_echo},
+		{"id": "whirlwind", "title": "Maelstrom", "rarity": "cursed", "unique": true,
+		"desc": "Heavy attack becomes a 360° whirlwind", "corruption": 18, "apply": _apply_whirlwind},
+		{"id": "twin_strike", "title": "Twin Fang Curse", "rarity": "rare", "unique": true,
+		"desc": "Every melee hit adds a second strike for 50% damage", "corruption": 16, "apply": _apply_twin},
+
 	]
 
 func _apply_sharpened(p: PlayerController) -> void:
@@ -62,7 +77,28 @@ func _player_corruption() -> float:
 	# stays out of the pool.
 	var p := GameManager.player
 	return p.corruption if p != null else 0.0
+
+
+func _apply_ember(p: PlayerController) -> void:
+	p.burn_dps += 6.0
+
+func _apply_frost(p: PlayerController) -> void:
+	p.chill_factor = clampf(p.chill_factor + 0.3, 0.0, 0.85)
+
+func _apply_storm(p: PlayerController) -> void:
+	p.chain_count = mini(p.chain_count + 1, 8)
+
+func _apply_reaper(p: PlayerController) -> void:
+	p.execute_threshold = minf(p.execute_threshold + 0.14, 0.5)
 	
+func _apply_echo(p: PlayerController) -> void:
+	p.echo_level += 1
+
+func _apply_whirlwind(p: PlayerController) -> void:
+	p.whirlwind = true
+
+func _apply_twin(p: PlayerController) -> void:
+	p.twin_strike = true
 func get_choices(count: int) -> Array:
 	var owned: Array = _owned_unique_ids()
 	# The pool is built by hand now. Skip any unique you already own, keep the

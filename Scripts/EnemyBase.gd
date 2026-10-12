@@ -31,6 +31,12 @@ var _spawning := false
 var _base_sprite_scale := Vector2.ONE
 var _circle_tele: Texture2D
 var _rect_tele: Texture2D
+var _burn_dps := 0.0
+var _burn_time := 0.0
+var _burn_tick := 0.0
+var _chill_factor := 0.0
+var _chill_time := 0.0
+
 
 func _ready() -> void:
 	health.died.connect(die)
@@ -52,6 +58,7 @@ func _ai_process(_delta: float) -> void:
 	
 	
 func _physics_process(delta: float) -> void:
+	var _ai_velocity := Vector2.ZERO
 	if state == State.DEAD:
 		return
 	if _spawning:
@@ -61,14 +68,22 @@ func _physics_process(delta: float) -> void:
 		return
 	if _player == null or not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player")
+	velocity = _ai_velocity
 	_ai_process(delta)
+	_ai_velocity = velocity
+	_tick_status(delta)
 	_tick_telegraph(delta)
+	
+	if state == State.DEAD:
+		return
 	if _hitstun > 0.0:
 		_hitstun -= delta
 		velocity = Vector2.ZERO
 	if _player and is_instance_valid(_player):
 		sprite.flip_h = _player.global_position.x < global_position.x
 		
+	if _chill_factor > 0.0:
+		velocity *= (1.0 - _chill_factor)
 	velocity += _knockback
 	_knockback = _knockback.move_toward(Vector2.ZERO, 1200 * delta)
 	if Engine.time_scale > 0.0:
@@ -234,3 +249,42 @@ func make_corrupted() -> void:
 	sprite.modulate = Color(0.75, 0.45, 1.0)
 	Juice.set_outline(sprite, true, Color(0.7, 0.2, 1.0), 1.0, true)
 
+func take_damage(amount: float, from_pos: Vector2) -> void:
+	if state == State.DEAD:
+		return
+	health.damage(amount)
+	Juice.flash(sprite, Color.WHITE, 0.08)
+	Juice.damage_number(get_tree().current_scene, global_position, amount, Color(1, 1, 1))
+	apply_knockback((global_position - from_pos).normalized(), 70.0)
+	
+func ignite(dps: float, dur: float) -> void:
+	if state == State.DEAD:
+		return
+	_burn_dps = maxf(_burn_dps, dps)
+	_burn_time = maxf(_burn_time, dur)
+
+func chill(factor: float, dur: float) -> void:
+	if state == State.DEAD:
+		return
+	# Same shape as ignite, plus the 0.85 clamp again. Even fed a huge number,
+	# the enemy still moves.
+	_chill_factor = clampf(maxf(_chill_factor, factor), 0.0, 0.85)
+	_chill_time = maxf(_chill_time, dur)
+func _tick_status(delta: float) -> void:
+	# Burn counts down every frame but only deals damage every quarter second.
+	# A quarter of _burn_dps four times a second is the dps on the label.
+	if _burn_time > 0.0:
+		_burn_time -= delta
+		_burn_tick -= delta
+		if _burn_tick <= 0.0:
+			_burn_tick = 0.25
+			health.damage(_burn_dps * 0.25)
+		# Timer out: zero the strength so the next ignite starts clean.
+		if _burn_time <= 0.0:
+			_burn_dps = 0.0
+	# Chill is just a timer here. The actual slow happens in _physics_process.
+	if _chill_time > 0.0:
+		_chill_time -= delta
+		if _chill_time <= 0.0:
+			_chill_factor = 0.0
+			

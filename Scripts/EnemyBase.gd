@@ -85,9 +85,26 @@ func die() -> void:
 		return
 	state = State.DEAD
 	velocity = Vector2.ZERO
+	
+	_disable_attack_area()
+	hide_telegraph()
+	hurtbox.set_deferred("monitoring", false)
+	set_deferred("collision_layer", 0)
+	set_deferred("collision_mask", 0)
 	AudioManager.play("enemy_death")     # 2.5 promised this line a home
 	defeated.emit(self)
-	queue_free()
+	
+	var world := get_tree().current_scene
+	Juice.flash(sprite, Color.WHITE, 0.06)
+	Juice.impact(world, global_position, Color(0.85, 0.2, 0.2), 12, 1.4)
+	Juice.ring(world, global_position, Color(1.0, 0.5, 0.4, 0.7), 30.0, 0.3)
+	Juice.set_outline(sprite, false)
+	
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(self, "scale", scale * 1.25, 0.28)
+	tw.tween_property(sprite, "modulate:a", 0.0, 0.28)
+	tw.chain().tween_callback(queue_free)
 	
 
 func player_pos() -> Vector2:
@@ -122,6 +139,7 @@ func _disable_attack_area() -> void:
 func show_telegraph_circle(radius: float, color := Color(1, 0.15, 0.15, 0.5)) -> void:
 	if not telegraph.visible:
 		_tele_elapsed = 0.0 
+		AudioManager.play("telegraph", -4.0)
 	telegraph.position = Vector2.ZERO
 	telegraph.texture = _circle_tele
 	telegraph.rotation = 0.0
@@ -137,6 +155,10 @@ func hide_telegraph() -> void:
 
 func show_telegraph_rect(length: float, width: float, direction: Vector2,
 		color := Color(1, 0.2, 0.2, 0.55)) -> void:
+	if not telegraph.visible:
+		_tele_elapsed = 0.0
+		AudioManager.play("telegraph", -4.0)
+		
 	telegraph.texture = _rect_tele
 	telegraph.rotation = direction.angle()
 	telegraph.scale = Vector2(length / 64.0, width / 64.0)

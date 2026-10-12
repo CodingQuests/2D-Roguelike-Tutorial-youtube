@@ -6,8 +6,23 @@
 [ext_resource type="PackedScene" uid="uid://bdhxmaw4pdoda" path="res://Scenes/HUD.tscn" id="4_qhs6v"]
 [ext_resource type="Script" uid="uid://hffhtu1gu7t3" path="res://Scripts/Dungeon.gd" id="5_uhcli"]
 
+[sub_resource type="Environment" id="Environment_uhcli"]
+background_mode = 3
+glow_enabled = true
+glow_intensity = 0.45
+glow_strength = 0.9
+glow_bloom = 0.05
+glow_hdr_threshold = 1.15
+
 [node name="CombatRoom" type="Node2D" unique_id=535670457]
+y_sort_enabled = true
 script = ExtResource("1_qhs6v")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=512268955]
+environment = SubResource("Environment_uhcli")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="." unique_id=1766124252]
+color = Color(0.64995646, 0.6421665, 0.7483791, 1)
 
 [node name="Floor" type="TileMapLayer" parent="." unique_id=900860499]
 script = ExtResource("5_uhcli")
@@ -18,7 +33,7 @@ dash_cooldown = 2.965
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1987023519]
 position = Vector2(143, 149)
-zoom = Vector2(4, 4)
+zoom = Vector2(3, 3)
 script = ExtResource("2_qhs6v")
 target_path = NodePath("../player")
 

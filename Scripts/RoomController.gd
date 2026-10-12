@@ -71,6 +71,7 @@ func _clear_active_room() -> void:
 	floor_layer.rooms[i]["cleared"] = true
 	floor_layer.unlock_room(i)
 	GameManager.slow_mo(0.35, 0.35)
+	AudioManager.play("room_clear")
 	GameManager.run_stats["rooms_cleared"] += 1
 	_set_status("ROOM CLEARED", 1.5)
 	if floor_layer.rooms[i]["type"] == Dungeon.RoomType.BOSS:

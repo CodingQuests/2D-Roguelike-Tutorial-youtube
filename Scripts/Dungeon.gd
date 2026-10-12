@@ -12,10 +12,11 @@ const GRID_H := 4
 const TILE := 16
 
 const ATLAS := preload("res://Assets/Tilemap/tilemap_packed.png")
-
 const BOULDER_TEX := preload("res://Assets/Tiles/tile_0006.png")
 const BRAZIER_TEX := preload("res://Assets/Tiles/tile_0029.png")
 const PROP_SCENE := preload("res://Scenes/DestructibleProp.tscn")
+const BRAZIER_LIGHT := preload("res://Scripts/BrazierLight.gd")
+
 
 const FLOOR := Vector2i(0, 4)
 const FLOOR_DECO := [Vector2i(1, 4), Vector2i(2, 4), Vector2i(3, 4)]
@@ -31,6 +32,7 @@ var rooms: Array = []
 var links: Array = []
 var _gate_nodes: Dictionary = {}
 var obstacles: Array[Rect2] = []
+static var _light_tex: GradientTexture2D = null
 
 func _ready() -> void:
 	_build_tileset()
@@ -170,11 +172,18 @@ func _place_brazier(cell: Vector2i) -> void:
 	flame.gravity = Vector2(0, -14)
 	flame.initial_velocity_min = 6.0
 	flame.initial_velocity_max = 14.0
-	flame.color = Color(1.0, 0.65, 0.25, 0.85)
+	flame.color = Color(1.9, 1.05, 0.35, 0.85)
 	flame.emitting = true
 	spr.add_child(flame)
 	
 	
+	var light := PointLight2D.new()
+	light.texture = _radial_light_texture()
+	light.texture_scale = 1.5
+	light.energy = 0.85
+	light.color = Color(1.0, 0.6, 0.25)
+	light.set_script(BRAZIER_LIGHT)
+	spr.add_child(light)
 func _cell_center(cell: Vector2i) -> Vector2:
 	return Vector2(cell.x + 0.5, cell.y + 0.5) * TILE
 
@@ -456,3 +465,22 @@ func unlock_room(i: int) -> void:
 			g.queue_free()
 	_gate_nodes.erase(i)
 	AudioManager.play("door_open", -2.0)
+
+
+
+static func _radial_light_texture() -> GradientTexture2D:
+	if _light_tex != null:
+		return _light_tex
+	var g := Gradient.new()
+	g.set_color(0, Color(1, 1, 1, 1))
+	g.set_color(1, Color(1, 1, 1, 0))
+	var t := GradientTexture2D.new()
+	t.gradient = g
+	t.fill = GradientTexture2D.FILL_RADIAL
+	t.fill_from = Vector2(0.5, 0.5)
+	t.fill_to = Vector2(0.5, 0.0)
+	t.width = 128
+	t.height = 128
+	_light_tex = t
+	return _light_tex
+	

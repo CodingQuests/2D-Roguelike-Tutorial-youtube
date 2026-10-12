@@ -1,43 +1,37 @@
-# The Last Forge · Lesson 4.4: Knowing where you are
+# The Last Forge · Lesson 5.1: Make it feel like a game
 
-Chapter 4, Turn It Into a Run. This branch is the project at the **end of lesson 4.4** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
+Chapter 5, Make Every Run Different. This branch is the project at the **end of lesson 5.1** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
 
-Starting lesson 5.1? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-4.4.zip), unzip it, and open `project.godot` in Godot 4.7.2.
+Starting lesson 5.2? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-5.1.zip), unzip it, and open `project.godot` in Godot 4.7.2.
 
-[← lesson 4.3](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-4.3) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 5.1 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-5.1)
+[← lesson 4.4](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-4.4) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 5.2 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-5.2)
 
-Walking into a fight or boss room now starts it: gates close every doorway of that room and its monsters spawn inside it. Clearing the room opens the gates, marks it cleared and counts it in `run_stats`. After the boss, the game waits 1.5 s and takes you down to a deeper floor with one more room. A minimap in the HUD draws the floor's rooms and links, colours rooms by type, dims cleared fights and pulses the room you're in.
+The run scene is now the game you get when you press Play, sounds no longer cut each other off, enemies die with a flash, a burst and a fade, and the dungeon has a dim tint, glow and flickering brazier lights.
 
 
 ## Files added
-- `Scripts/Minimap.gd` (and its `.uid`): `set_dungeon()`, `_room_center_tiles()`, a `_process()` that animates the pulse, `_draw()` (fits the floor's bounds into the control with one scale, draws links as lines and rooms as boxes, outlines the current room), and `_colour_for()`.
+- `Scripts/BrazierLight.gd` (and its `.uid`): a PointLight2D script whose energy flickers around its base value with two sine waves
 
 ## Files changed
-- `Scripts/Dungeon.gd`: `_gate_nodes`, `lock_room()` (one gate body per recorded door cell) and `unlock_room()`.
-- `Scripts/RoomController.gd`:
-  - New: `BOSS_SCENE`, and the `_current_room`, `_active_room`, `_floor_depth` and `_busy` variables.
-  - `_ready()` calls `_enter_floor(1)`.
-  - `_physics_process()` tracks which room you're in, counting it only once you're 16 px inside.
-  - `_on_enter_room()` hands off to `_start_combat()` or `_start_boss()`.
-  - `_spawn(scene, room_index)` spawns inside the room. A new `_clear_active_room()` and `_enter_floor()` are added.
-  - `_start_wave()`, the old `_spawn()` and `_random_spawn_point()` are deleted.
-- `Scripts/GameManager.gd`: `DEFAULT_RUN_STATS`, and `run_stats` as a duplicate of it.
-- `Scenes/HUD.tscn`: the root is renamed HUD. A new `Minimap` Control (bottom right, 135 x 114, in the group "Minimap") runs `Minimap.gd`.
-- `Scenes/CombatRoom.tscn`: the HUD instance is renamed HUD.
+- `project.godot`: the main scene is now `Scenes/CombatRoom.tscn` (right-click it in the FileSystem, Set as Main Scene)
+- `Scripts/AudioManager.gd`: a pool of 16 AudioStreamPlayers that keep playing while paused, several files per sound picked at random, `VARIATION` pitch per sound, sounds preloaded once in `_preload_streams()`, new `telegraph`, `room_clear`, `door_open` and `door_close` sounds; `play()` now takes `pitch = -1.0` (random variation) by default. The new file replaces the whole script, including the 5-voice pool from 3.6 (card 10): paste it over your version
+- `Scripts/HurtboxComponent.gd`: the old `print("entered: ", ...)` debug line is deleted
+- `Scripts/EnemyBase.gd`: `die()` turns the attack and telegraph off, stops the hurtbox and the body collision, then flashes, bursts, rings and fades the enemy out before freeing it; the telegraph sound plays once when a warning appears (circle and rectangle)
+- `Scripts/Dungeon.gd`: every brazier gets a PointLight2D with a shared radial gradient texture (`_radial_light_texture()`) and `BrazierLight.gd`; the flame particles get a brighter colour so they stand out from the light
+- `Scripts/RoomController.gd`: the room-clear sound when a fight room is cleared
+- `Scenes/CombatRoom.tscn`: WorldEnvironment (canvas background, glow 0.45 / 0.9 / bloom 0.05 / HDR threshold 1.15), CanvasModulate tint, Y Sort Enabled on the root, camera zoom 3
 
 ## Good to know
-- `_ready()` still has `floor_layer.generate()` and the player-position line after `_enter_floor(1)`, as in the video. The first floor is generated twice at start, which is harmless; lesson 6.1 removes those two lines.
-- `run_stats` already has slots for gold, essence, score and combo; chapters 5 and 6 fill them.
-- The gates call `AudioManager.play("door_close")` and `("door_open")`, but those sounds only exist from lesson 5.1. Until then AudioManager ignores the names. Clearing a room also has no sound until 5.1.
-- Monsters, projectiles and pickups from the old floor aren't cleaned up when you go down to the next floor; that comes in 6.1.
-- The video shows `_assign_types()` with the old "last room is the boss" line for a moment, because it was recorded before the fix. This branch keeps 4.3's fixed version.
-- The video types `BOSS_SCENE` as `res://scenes/BossEnemy.tscn` with a small s. This branch uses `res://Scenes/BossEnemy.tscn`, as the correction in lesson 3.3 asks (match the capitals in every preload). Lesson 5.1 corrects the video's line to the same thing.
-- The minimap is small; the video suggests making it bigger as an exercise.
+- The video adds `@onready var health: HealthComponent = $Health` to `PlayerController.gd` here. You already did it in 3.6 (card 04), so skip that step. A second copy of the line is a parse error.
+- The video also corrects `BOSS_SCENE` to `res://Scenes/BossEnemy.tscn`. Yours has had the capital S since 4.4, so skip that step.
+- Your enemies fade out as they die and take the room's tint, because your shader keeps the sprite's tint (3.6 card 07). In the video's project the shader still drops it, so the fade doesn't show there.
+- HDR 2D is still off in Project Settings, so the darkness and glow are subtle (the course leaves it off).
+- Y Sort is only enabled on the CombatRoom root, as in the video.
 
 ## Build this part yourself
 
 The same game is a set of interactive quests on CodingQuests: you write each system yourself and your code gets
-checked. The whole controller quest is free, no account needed: https://codingquests.io/roguelike?utm_source=github&utm_medium=readme&utm_campaign=fcc_2d_roguelike&utm_content=dungeon
+checked. The whole controller quest is free, no account needed: https://codingquests.io/roguelike?utm_source=github&utm_medium=readme&utm_campaign=fcc_2d_roguelike&utm_content=loot
 
 ## Requirements
 

@@ -22,8 +22,8 @@ func _ready() -> void:
 	_sprite = _body.get_node_or_null("Sprite2D")
 	if _sprite and _sprite.material == null:
 		_sprite.material = Juice.make_flash_material()
+	
 func _on_area_entered(area: Area2D) -> void:
-	print("entered: ", area.name)
 	if invulnerable:
 		return
 	if not area.is_in_group("hitbox"):

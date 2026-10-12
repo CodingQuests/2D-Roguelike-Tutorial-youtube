@@ -2,11 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://ckvu8yjgcr227" path="res://Scenes/player.tscn" id="1_jjgbg"]
 [ext_resource type="Script" uid="uid://da0jks2q6tig8" path="res://Scripts/PlayerCamera.gd" id="2_8gbba"]
-[ext_resource type="PackedScene" uid="uid://c1qwytsdrwjod" path="res://Scenes/GruntEnemy.tscn" id="3_8gbba"]
-[ext_resource type="PackedScene" uid="uid://1xtafenhv2be" path="res://Scenes/ChargerEnemy.tscn" id="4_jjvhh"]
-[ext_resource type="PackedScene" uid="uid://bffrww4eylsyo" path="res://Scenes/CasterEnemy.tscn" id="5_cstr3"]
-[ext_resource type="PackedScene" path="res://Scenes/BruteEnemy.tscn" id="6_brut3"]
-[ext_resource type="PackedScene" uid="uid://c2mwc18ck26o0" path="res://Scenes/SkitterlingEnemy.tscn" id="7_skit3"]
+[ext_resource type="PackedScene" uid="uid://b2m08r1r8p3t7" path="res://Scenes/BossEnemy.tscn" id="3_8gbba"]
 
 [node name="Main" type="Node2D" unique_id=535670457]
 
@@ -20,25 +16,5 @@ zoom = Vector2(4, 4)
 script = ExtResource("2_8gbba")
 target_path = NodePath("../player")
 
-[node name="GruntEnemy" parent="." unique_id=522414560 instance=ExtResource("3_8gbba")]
-position = Vector2(62, 73)
-
-[node name="ChargerEnemy" parent="." unique_id=1940342260 instance=ExtResource("4_jjvhh")]
-position = Vector2(205, 192)
-charge_speed = 360.0
-charge_range = 180.0
-cooldown = 1.8
-windup_time = 0.5
-charge_time = 0.45
-
-[node name="CasterEnemy" parent="." instance=ExtResource("5_cstr3")]
-position = Vector2(268, 86)
-
-[node name="BruteEnemy" parent="." instance=ExtResource("6_brut3")]
-position = Vector2(74, 236)
-
-[node name="SkitterlingEnemy" parent="." instance=ExtResource("7_skit3")]
-position = Vector2(258, 228)
-
-[node name="SkitterlingEnemy2" parent="." instance=ExtResource("7_skit3")]
-position = Vector2(232, 246)
+[node name="BossEnemy" parent="." unique_id=522414560 instance=ExtResource("3_8gbba")]
+position = Vector2(55, 154)

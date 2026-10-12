@@ -89,3 +89,30 @@ static func set_outline(sprite: CanvasItem, on: bool, color: Color = Color(1.0, 
 	mat.set_shader_parameter("outline_pulse", 1.0 if pulse else 0.0)
 	
 	
+static func ring(world: Node, pos: Vector2, color: Color = Color.WHITE,
+		radius: float = 28.0, duration: float = 0.35, width: float = 2.0) -> void:
+	if world == null or not is_instance_valid(world):
+		return
+	var line := Line2D.new()
+	line.closed = true
+	line.width = width
+	line.default_color = color
+	line.z_index = 90
+	world.add_child(line)
+	line.global_position = pos
+
+	var tw := line.create_tween()
+	tw.tween_method(
+		func(r: float) -> void: line.points = _circle_points(r),
+		radius * 0.2, radius, duration)
+	tw.parallel().tween_property(line, "modulate:a", 0.0, duration)
+	tw.chain().tween_callback(line.queue_free)
+	
+static func _circle_points(r: float, steps: int = 24) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in range(steps):
+		var a := TAU * float(i) / steps
+		pts.append(Vector2(cos(a), sin(a)) * r)
+	return pts
+	
+	

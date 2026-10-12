@@ -116,6 +116,12 @@ func show_telegraph_circle(radius: float, color := Color(1, 0.15, 0.15, 0.5)) ->
 	telegraph.modulate = color
 	telegraph.visible = true
 
+func hide_telegraph() -> void:
+	telegraph.visible = false
+	telegraph.position = Vector2.ZERO
+	Juice.set_outline(sprite, false)
+
+
 func show_telegraph_rect(length: float, width: float, direction: Vector2,
 		color := Color(1, 0.2, 0.2, 0.55)) -> void:
 	telegraph.rotation = direction.angle()

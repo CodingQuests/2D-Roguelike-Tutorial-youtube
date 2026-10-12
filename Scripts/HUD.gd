@@ -11,6 +11,9 @@ const UPGRADE_CARD := preload("res://Scenes/UpgradeCard.tscn")
 @onready var _card_row: HBoxContainer = $UpgradePanel/Cards
 @onready var tier_label: Label = $TierLabel
 @onready var gold_label: Label = $GoldLabel
+@onready var game_over: Control = $GameOver
+@onready var game_over_summary: Label = $GameOver/Summary
+@onready var essence_label: Label = $GameOver/Essence
 
 var _player: PlayerController = null
 var _status_token := 0
@@ -47,6 +50,8 @@ func _ready() -> void:
 	$UpgradePanel/Skip.pressed.connect(_skip_upgrade)
 	$CodexPanel/Close.pressed.connect(_close_codex)
 	$CodexPanel.visible = false
+	game_over.visible = false
+	$GameOver/Retry.pressed.connect(_on_retry)
 func _process(_delta: float) -> void:
 	if _game_over or _leaving or get_tree().paused:
 		return
@@ -130,3 +135,74 @@ func _refresh_codex() -> void:
 func _close_codex() -> void:
 	$CodexPanel.visible = false
 	get_tree().paused = false
+
+func _format_time(seconds: float) -> String:
+	var t := int(seconds)
+	# Minutes, then the remainder. %02d pads the seconds: 2:04, not 2:4.
+	return "%d:%02d" % [t / 60, t % 60]
+	
+	
+
+
+func show_game_over(immediate_pause: bool = false) -> void:
+	# Same latch as die(): a second call in the same frame bails.
+	if _game_over:
+		return
+	_game_over = true
+	MetaProgression.bank_run(int(GameManager.run_stats["essence"]))
+	var s: Dictionary = GameManager.run_stats
+	# One label, one line per stat.
+	game_over_summary.text = "\n".join([
+		"Floor reached: %d" % s["floor"],
+		"Rooms cleared: %d" % s["rooms_cleared"],
+		"Enemies killed: %d" % s["enemies_killed"],
+		"Best combo: %d" % s["max_combo"],
+		"Time: %s" % _format_time(GameManager.get_run_time()),
+		# A blank line, so there's a gap above the essence.
+		"",
+	])
+	_count_up(essence_label, int(s["essence"]), "Essence banked: ")
+	# Step 7 replaces that line with a counting animation.
+
+	# Nothing else may be on screen or clickable over a death screen.
+	upgrade_panel.visible = false
+	$CodexPanel.visible = false
+	game_over.visible = true
+
+	# Victory in 7.3 uses this path without starting a death-beat timer.
+	if immediate_pause:
+		get_tree().paused = true
+		return
+	# Let the death beat play, then freeze the world behind the summary.
+	# false, false, true: not while paused, not on the physics clock, ignore time
+	# scale. 1.2 real seconds even with the world at quarter speed under it.
+	await get_tree().create_timer(1.2, false, false, true).timeout
+	if _game_over and not _leaving and is_inside_tree():
+		get_tree().paused = true
+		
+func _on_retry() -> void:
+	if _leaving:
+		return
+	_leaving = true
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	# Rebuilds the room from the file. That runs RoomController._ready() again,
+	# which calls start_run(), so the reset comes free.
+	var error := get_tree().reload_current_scene()
+	if error != OK:
+		_leaving = false
+		get_tree().paused = true
+		push_error("Retry failed: %s" % error_string(error))
+
+
+func _count_up(label: Label, target: int, prefix: String) -> void:
+	var tw := create_tween()
+	tw.set_ignore_time_scale(true)
+	tw.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS) # also completes on 7.3's paused victory screen
+	# Runs the lambda every frame with a value sliding from 0 to target over 0.6 s.
+	tw.tween_method(
+		# int(v), so it never shows a decimal on the way up.
+		func(v: float) -> void: label.text = "%s%d" % [prefix, int(v)],
+		0.0, float(target), 0.6
+	)
+	

@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 GameManager="*uid://dkxtj58c6om6g"
 AudioManager="*uid://cvus1w2e6yt2d"
+MetaProgression="*uid://bv3b3dea7lx51"
 
 [display]
 

@@ -120,3 +120,46 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(1, 1, 1, 0)
+
+[node name="GameOver" type="Control" parent="." unique_id=1699958731]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Backdrop" type="ColorRect" parent="GameOver" unique_id=928797929]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.47000003)
+
+[node name="Summary" type="Label" parent="GameOver" unique_id=1608308430]
+layout_mode = 0
+offset_left = 538.0
+offset_top = 190.0
+offset_right = 578.0
+offset_bottom = 213.0
+text = "test"
+
+[node name="Essence" type="Label" parent="GameOver" unique_id=2019520626]
+layout_mode = 0
+offset_left = 559.0
+offset_top = 373.0
+offset_right = 599.0
+offset_bottom = 396.0
+text = "test"
+
+[node name="Retry" type="Button" parent="GameOver" unique_id=1892700391]
+layout_mode = 0
+offset_left = 486.0
+offset_top = 445.0
+offset_right = 701.0
+offset_bottom = 506.0
+text = "RUN AGAIN"

@@ -27,6 +27,7 @@ var _stocked: Dictionary = {}
 var _open_stands: Dictionary = {}
 
 func _ready() -> void:
+	GameManager.start_run()
 	randomize()
 	await get_tree().process_frame
 	_enter_floor(1)
@@ -35,6 +36,8 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if not is_instance_valid(player) or not player.health.is_alive():
+		return
 	if _busy or _active_room != -1 or player == null:
 		return
 	var here := floor_layer.room_at(player.global_position)
@@ -57,7 +60,11 @@ func _on_enemy_defeated(_enemy: Node) -> void:
 	_alive -= 1
 	if _alive <= 0:
 		_clear_active_room()
-
+	GameManager.register_kill()
+	GameManager.run_stats["enemies_killed"] += 1
+	GameManager.run_stats["essence"] += 1
+	if "is_corrupted" in _enemy and _enemy.is_corrupted:
+		GameManager.run_stats["essence"] += 3
 
 func _wave_list(depth: int) -> Array:
 	var list: Array = []

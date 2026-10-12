@@ -38,6 +38,7 @@ var syn_glacial: bool = false      # slash waves chill hard
 var syn_cyclone: bool = false      # whirlwind also throws waves outward
 var syn_harvest: bool = false      # execute threshold boosted
 
+var _dead := false
 var _last_good_pos := Vector2.ZERO
 var _is_dashing := false
 var _dash_timer := 0.0
@@ -71,8 +72,11 @@ func _ready() -> void:
 	_last_good_pos = global_position
 	_base_sprite_scale = player_sprite.scale
 	GameManager.register_player(self)
-	
+	hurtbox.hurt.connect(_on_hurt)
+	health.died.connect(_on_died)
 func _physics_process(delta: float) -> void:
+	if _dead:
+		return
 	if get_tree().paused:
 		return
 	if delta <= 0.0 or Engine.time_scale <= 0.0:
@@ -353,7 +357,9 @@ func _blood_siphon() -> void:
 	Juice.floating_text(get_tree().current_scene, global_position,
 		"+%d" % int(health.current_health - before), Color(0.4, 1.0, 0.5), 14)
 	
-
+func _on_hurt(_amount: float, _source) -> void:
+	GameManager.break_combo()
+	
 func reset_floor_motion() -> void:
 	_is_dashing = false
 	_dash_timer = 0.0
@@ -366,3 +372,25 @@ func reset_floor_motion() -> void:
 	player_sprite.modulate = Color.WHITE
 	
 	
+func _on_died() -> void:
+	# Same latch the enemies have. died can arrive twice in a frame; the second bails.
+	if _dead:
+		return
+	_dead = true
+	# Stop the body where it is instead of sliding on.
+	_is_dashing = false
+	velocity = Vector2.ZERO
+	_knockback = Vector2.ZERO
+	# Nothing can hurt it again.
+	hurtbox.invulnerable = true
+	# Weapon off, so a swing that was mid-air can't still land.
+	weapon.set_process(false)  # WeaponController advances attacks in _process, not physics.
+	weapon.set_physics_process(false)
+	weapon.state = WeaponController.State.IDLE
+	weapon._disable_hitbox()
+	# Quarter speed for 1.2 s. Same length as the HUD's timer, so the world
+	# freezes right as the slow-mo would have ended.
+	GameManager.slow_mo(0.25, 1.2)
+	# A HUD without the death screen yet gets skipped, not a crash.
+	if GameManager.hud and GameManager.hud.has_method("show_game_over"):
+		GameManager.hud.show_game_over()

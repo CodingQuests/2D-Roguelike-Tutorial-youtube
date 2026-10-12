@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://ckvu8yjgcr227" path="res://Scenes/player.tscn" id="1_jjgbg"]
 [ext_resource type="Script" uid="uid://da0jks2q6tig8" path="res://Scripts/PlayerCamera.gd" id="2_8gbba"]
 [ext_resource type="PackedScene" uid="uid://bscw2r0xxsmt1" path="res://Scenes/Hazard.tscn" id="3_hazrd"]
+[ext_resource type="PackedScene" uid="uid://da72qidqpewxi" path="res://Scenes/dummy.tscn" id="4_dummy"]
 
 [node name="Main" type="Node2D" unique_id=535670457]
 
@@ -18,3 +19,6 @@ target_path = NodePath("../Player")
 
 [node name="Hazard" parent="." unique_id=460207323 instance=ExtResource("3_hazrd")]
 position = Vector2(184, 133)
+
+[node name="Dummy" parent="." unique_id=522414560 instance=ExtResource("4_dummy")]
+position = Vector2(97.63636, 181.54546)

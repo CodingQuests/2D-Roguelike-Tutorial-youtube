@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://da72qidqpewxi"]
+
+[ext_resource type="Texture2D" uid="uid://mrjj5tyg5jsn" path="res://Assets/Tiles/tile_0082.png" id="1_x66xh"]
+[ext_resource type="Script" uid="uid://ndidq3dg483g" path="res://Scripts/HealthComponent.gd" id="2_5d6mj"]
+
+[sub_resource type="GDScript" id="GDScript_ceyr3"]
+script/source = "extends CharacterBody2D
+
+@onready var health: HealthComponent = $Health
+
+func _ready() -> void:
+	health.died.connect(_on_health_died)
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed(\"quick_attack\"):
+		health.damage(10.0)
+		print(health.current_health)
+
+
+func _on_health_died() -> void:
+	queue_free()
+"
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hhunp"]
+radius = 7.0
+height = 18.0
+
+[node name="Dummy" type="CharacterBody2D" unique_id=522414560]
+script = SubResource("GDScript_ceyr3")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1208173651]
+texture = ExtResource("1_x66xh")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=487717135]
+shape = SubResource("CapsuleShape2D_hhunp")
+
+[node name="Health" type="Node" parent="." unique_id=2015383893]
+script = ExtResource("2_5d6mj")
+metadata/_custom_type_script = "uid://ndidq3dg483g"

@@ -47,5 +47,6 @@ func _on_area_entered(area: Area2D) -> void:
 		if dir.length() < 0.01:
 			dir = Vector2.RIGHT.rotated(randf() * TAU)
 		_body.apply_knockback(dir.normalized(), area.knockback_force)
-	
+	if area.has_method("on_hurtbox_hit"):
+		area.on_hurtbox_hit()
 	

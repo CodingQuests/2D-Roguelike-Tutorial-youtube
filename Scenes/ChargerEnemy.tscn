@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://1xtafenhv2be"]
+
+[ext_resource type="PackedScene" uid="uid://d2yfkgcecgmo0" path="res://Scenes/EnemyBase.tscn" id="1_xk4yf"]
+[ext_resource type="Script" uid="uid://b2sbeyo74y3np" path="res://Scripts/ChargerEnemy.gd" id="2_ehmhi"]
+[ext_resource type="Texture2D" uid="uid://8ne6el4lb015" path="res://Assets/Tiles/tile_0110.png" id="3_xctiw"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xctiw"]
+resource_local_to_scene = true
+size = Vector2(11, 14)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wxy5m"]
+resource_local_to_scene = true
+size = Vector2(13, 14)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ehnh3"]
+resource_local_to_scene = true
+
+[sub_resource type="Gradient" id="Gradient_124i6"]
+offsets = PackedFloat32Array(0, 0.63706565, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ccy0q"]
+gradient = SubResource("Gradient_124i6")
+
+[node name="ChargerEnemy" unique_id=522414560 instance=ExtResource("1_xk4yf")]
+script = ExtResource("2_ehmhi")
+charge_speed = 360.0
+charge_range = 180.0
+cooldown = 1.8
+windup_time = 0.5
+charge_time = 0.45
+recovery_time = 0.6
+
+[node name="Sprite2D" parent="." index="0" unique_id=1208173651]
+texture = ExtResource("3_xctiw")
+
+[node name="CollisionShape2D" parent="." index="1" unique_id=487717135]
+shape = SubResource("RectangleShape2D_xctiw")
+
+[node name="CollisionShape2D" parent="HurtboxComponent" parent_id_path=PackedInt32Array(2072059626) index="0" unique_id=60642843]
+shape = SubResource("RectangleShape2D_wxy5m")
+
+[node name="CollisionShape2D" parent="HitboxComponent" parent_id_path=PackedInt32Array(787784906) index="0" unique_id=524290147]
+shape = SubResource("CircleShape2D_ehnh3")
+
+[node name="Telegraph" parent="." index="5" unique_id=168883971]
+texture = SubResource("GradientTexture2D_ccy0q")

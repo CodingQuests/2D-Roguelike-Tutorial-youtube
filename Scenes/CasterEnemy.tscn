@@ -1,0 +1,50 @@
+[gd_scene format=3 uid="uid://bffrww4eylsyo"]
+
+[ext_resource type="PackedScene" uid="uid://d2yfkgcecgmo0" path="res://Scenes/EnemyBase.tscn" id="1_1do3i"]
+[ext_resource type="Script" uid="uid://f2qbtsntc1pr" path="res://Scripts/CasterEnemy.gd" id="2_1do3i"]
+[ext_resource type="Texture2D" uid="uid://bygvtphrw5bre" path="res://Assets/Tiles/tile_0084.png" id="3_1do3i"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_sd8q3"]
+resource_local_to_scene = true
+size = Vector2(11, 14)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_t8dsv"]
+resource_local_to_scene = true
+size = Vector2(13, 14)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_yb3tc"]
+resource_local_to_scene = true
+
+[sub_resource type="Gradient" id="Gradient_124i6"]
+offsets = PackedFloat32Array(0, 0.63706565, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ccy0q"]
+gradient = SubResource("Gradient_124i6")
+
+[node name="CasterEnemy" unique_id=522414560 instance=ExtResource("1_1do3i")]
+script = ExtResource("2_1do3i")
+attack_range = null
+attack_cooldown = null
+attack_active_time = null
+recovery_time = 0.6
+telegraph_time = null
+max_health = null
+speed = null
+attack_damage = null
+attack_knockback = null
+
+[node name="Sprite2D" parent="." index="0" unique_id=1208173651]
+texture = ExtResource("3_1do3i")
+
+[node name="CollisionShape2D" parent="." index="1" unique_id=487717135]
+shape = SubResource("RectangleShape2D_sd8q3")
+
+[node name="CollisionShape2D" parent="HurtboxComponent" parent_id_path=PackedInt32Array(2072059626) index="0" unique_id=60642843]
+shape = SubResource("RectangleShape2D_t8dsv")
+
+[node name="CollisionShape2D" parent="HitboxComponent" parent_id_path=PackedInt32Array(787784906) index="0" unique_id=524290147]
+shape = SubResource("CircleShape2D_yb3tc")
+
+[node name="Telegraph" parent="." index="5" unique_id=168883971]
+texture = SubResource("GradientTexture2D_ccy0q")

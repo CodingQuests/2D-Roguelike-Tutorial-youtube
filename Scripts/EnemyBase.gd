@@ -24,6 +24,7 @@ var state_timer: float = 0.0
 var _knockback := Vector2.ZERO
 var _player: Node2D = null
 var _tele_elapsed := 0.0
+var _hitstun := 0.0
 
 func _ready() -> void:
 	health.died.connect(die)
@@ -49,6 +50,9 @@ func _physics_process(delta: float) -> void:
 		_player = get_tree().get_first_node_in_group("player")
 	_ai_process(delta)
 	_tick_telegraph(delta)
+	if _hitstun > 0.0:
+		_hitstun -= delta
+		velocity = Vector2.ZERO
 	if _player and is_instance_valid(_player):
 		sprite.flip_h = _player.global_position.x < global_position.x
 		
@@ -57,7 +61,11 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	
 func apply_knockback(direction: Vector2, force: float) -> void:
+	if not (is_finite(direction.x) and is_finite(direction.y)):
+		return
 	_knockback = direction * force
+	# Stun scales with the force, clamped so it's always brief.
+	_hitstun = maxf(_hitstun, clampf(force / 1800.0, 0.08, 0.22))
 	
 	
 
@@ -108,6 +116,14 @@ func show_telegraph_circle(radius: float, color := Color(1, 0.15, 0.15, 0.5)) ->
 	telegraph.modulate = color
 	telegraph.visible = true
 
+func show_telegraph_rect(length: float, width: float, direction: Vector2,
+		color := Color(1, 0.2, 0.2, 0.55)) -> void:
+	telegraph.rotation = direction.angle()
+	telegraph.scale = Vector2(length / 64.0, width / 64.0)
+	# The quad is centred, but the beam starts at the enemy — shift it forward.
+	telegraph.position = Vector2(length * 0.5, 0).rotated(direction.angle())
+	telegraph.modulate = color
+	telegraph.visible = true
 func _tick_telegraph(delta: float) -> void:
 	if not telegraph.visible:
 		return

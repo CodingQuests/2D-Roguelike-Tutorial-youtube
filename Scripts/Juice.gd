@@ -71,3 +71,21 @@ static func damage_number(world: Node, pos: Vector2, amount: float,
 	tw.tween_property(label, "modulate:a", 0.0, 0.5).set_delay(0.15)
 	tw.chain().tween_callback(label.queue_free)
 	
+
+static func _mat(sprite: CanvasItem) -> ShaderMaterial:
+	var mat := sprite.material as ShaderMaterial
+	if mat == null or mat.shader != SPRITE_SHADER:
+		mat = make_flash_material()
+		sprite.material = mat
+	return mat
+	
+static func set_outline(sprite: CanvasItem, on: bool, color: Color = Color(1.0, 0.85, 0.3),
+		width: float = 1.0, pulse: bool = false) -> void:
+	if sprite == null or not is_instance_valid(sprite):
+		return
+	var mat := _mat(sprite)
+	mat.set_shader_parameter("outline_width", width if on else 0.0)
+	mat.set_shader_parameter("outline_color", color)
+	mat.set_shader_parameter("outline_pulse", 1.0 if pulse else 0.0)
+	
+	

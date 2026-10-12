@@ -1,28 +1,28 @@
-# The Last Forge · Lesson 3.1: One enemy, off one script
+# The Last Forge · Lesson 3.2: Telegraphs: being readable beats being hard
 
-Chapter 3, Make One Room Worth Fighting In. This branch is the project at the **end of lesson 3.1** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
+Chapter 3, Make One Room Worth Fighting In. This branch is the project at the **end of lesson 3.2** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
 
-Starting lesson 3.2? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-3.1.zip), unzip it, and open `project.godot` in Godot 4.7.2.
+Starting lesson 3.3? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-3.2.zip), unzip it, and open `project.godot` in Godot 4.7.2.
 
-[← lesson 2.5](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-2.5) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 3.2 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-3.2)
+[← lesson 3.1](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-3.1) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 3.3 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-3.3)
 
-The first monster. EnemyBase is a scene and a script that every enemy builds on, and the grunt is the first enemy made from it. It finds you, chases you, swings when you're close, and then needs a moment to recover.
+The grunt now warns before it swings: a soft red circle that fills in over the windup and a pulsing red outline. Then comes the attack, then recovery. Every enemy also gets its own collision shapes again, and the grunt is slower.
 
 
 ## Files added
-- `Scenes/EnemyBase.tscn`: a duplicate of the dummy. The root `EnemyBase` is in the `enemy` group. It has Sprite2D, CollisionShape2D, Health, HurtboxComponent (layer 5, mask 6) and HitboxComponent (layer 7, no mask, sword sprite removed), plus a hidden, empty `Telegraph` Sprite2D. Its three collision shapes are cleared so each enemy can give its own.
-- `Scripts/EnemyBase.gd` (and its `.uid`): `class_name EnemyBase` with the State enum, exported stats, node references and the `defeated` signal. `_ready()` calls our own `_on_ready()` hook, and `_physics_process()` calls `_ai_process()`. It finds the player through the `player` group, faces it and applies knockback. Also has `apply_knockback()`, `die()`, `player_pos()`, `has_player()`, `dir_to_player()`, `distance_to_player()`, `enable_attack_area()` and `_disable_attack_area()`.
-- `Scenes/GruntEnemy.tscn`: a new inherited scene of EnemyBase, using tile 108 and its own circle shapes.
-- `Scripts/GruntEnemy.gd` (and its `.uid`): `class_name GruntEnemy extends EnemyBase`. Its `_on_ready()` sets health 50, speed 95, damage 12 and knockback 200. The loop is chase, then attack when in range, then recovery and a cooldown.
+- None
 
 ## Files changed
-- `Scenes/player.tscn`: the Player root is in the `player` group.
-- `Scenes/main.tscn`: the dummy and the hazard are gone and the grunt is in. The player node is now called `player`.
+- `Scripts/EnemyBase.gd`: adds the `telegraph` node reference, `_tele_elapsed`, `show_telegraph_circle()` and `_tick_telegraph()`, which turns the warning into a clock. `_physics_process()` calls `_tick_telegraph()` right after `_ai_process()`.
+- `Scripts/GruntEnemy.gd`: adds `telegraph_time` and the TELEGRAPH state. `_enter_telegraph()` shows a circle at 0.85 × attack range and turns on the outline. `hide_telegraph()` lives in the grunt's script and runs from `_on_ready()` and `_enter_attack()`. Speed goes from 95 to 60.
+- `Scripts/Juice.gd`: adds `_mat()` and `set_outline()`.
+- `Scenes/EnemyBase.tscn`: the Telegraph gets a GradientTexture2D. It's white, filled radially from the centre and transparent at the edge, at scale 0.6. The three collision shapes are back (body and hurtbox rectangles, hitbox circle), each with Local to Scene on.
+- `Scenes/GruntEnemy.tscn`: stores `telegraph_time = 0.35`.
 
 ## Good to know
-- Known at this point: knockback stacks on top of the grunt's own velocity, so a hit can send it flying (the video points this out at the end). Lesson 3.3 adds hitstun.
-- `_ready()` calls `_on_ready()` second, before the health and hitbox values are copied, as the video shows from 12:52.
-- `dummy.tscn` and `Hazard.tscn` stay in the project. They're just no longer in `main.tscn`.
+- This branch includes the first 3:46 of the recorded 3.3 video (radial fill, Local to Scene, grunt speed 60), which the course plays at the end of this lesson.
+- Setting the Telegraph's scale in the Inspector does nothing in game, because `show_telegraph_circle()` sets the scale from the radius every time the warning shows.
+- The swing reaches about 46 px (22 px radius, 24 px in front), a bit past the 38 px warning. The recap asks you to test that edge.
 
 ## Build this part yourself
 

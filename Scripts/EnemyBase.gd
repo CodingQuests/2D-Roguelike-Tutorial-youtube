@@ -27,7 +27,8 @@ var _tele_elapsed := 0.0
 var _hitstun := 0.0
 var _spawning := false
 var _base_sprite_scale := Vector2.ONE
-
+var _circle_tele: Texture2D
+var _rect_tele: Texture2D
 func _ready() -> void:
 	health.died.connect(die)
 	_on_ready()
@@ -37,7 +38,9 @@ func _ready() -> void:
 	attack_area.damage = attack_damage
 	attack_area.knockback_force = attack_knockback
 	_disable_attack_area()
-	
+	_base_sprite_scale = sprite.scale
+	_init_telegraph_textures()
+	hide_telegraph()
 func _on_ready() -> void:
 	pass
 
@@ -50,7 +53,8 @@ func _physics_process(delta: float) -> void:
 		return
 	if _spawning:
 		velocity = Vector2.ZERO
-		move_and_slide()
+		if Engine.time_scale > 0.0:
+			move_and_slide()
 		return
 	if _player == null or not is_instance_valid(_player):
 		_player = get_tree().get_first_node_in_group("player")
@@ -64,7 +68,8 @@ func _physics_process(delta: float) -> void:
 		
 	velocity += _knockback
 	_knockback = _knockback.move_toward(Vector2.ZERO, 1200 * delta)
-	move_and_slide()
+	if Engine.time_scale > 0.0:
+		move_and_slide()
 	
 func apply_knockback(direction: Vector2, force: float) -> void:
 	if not (is_finite(direction.x) and is_finite(direction.y)):
@@ -117,6 +122,8 @@ func _disable_attack_area() -> void:
 func show_telegraph_circle(radius: float, color := Color(1, 0.15, 0.15, 0.5)) -> void:
 	if not telegraph.visible:
 		_tele_elapsed = 0.0 
+	telegraph.position = Vector2.ZERO
+	telegraph.texture = _circle_tele
 	telegraph.rotation = 0.0
 	telegraph.scale = Vector2.ONE * (radius * 2.0 / 64.0)
 	telegraph.modulate = color
@@ -130,6 +137,7 @@ func hide_telegraph() -> void:
 
 func show_telegraph_rect(length: float, width: float, direction: Vector2,
 		color := Color(1, 0.2, 0.2, 0.55)) -> void:
+	telegraph.texture = _rect_tele
 	telegraph.rotation = direction.angle()
 	telegraph.scale = Vector2(length / 64.0, width / 64.0)
 	# The quad is centred, but the beam starts at the enemy — shift it forward.
@@ -161,3 +169,23 @@ func spawn_in() -> void:
 	tw.chain().tween_callback(func() -> void: _spawning = false)
 	
 	
+func _init_telegraph_textures() -> void:
+	var gradient := Gradient.new()
+	gradient.set_color(0, Color.WHITE)
+	gradient.set_color(1, Color(1, 1, 1, 0))
+	gradient.add_point(0.96, Color.WHITE)
+	var circle := GradientTexture2D.new()
+	circle.width = 64
+	circle.height = 64
+	circle.gradient = gradient
+	circle.fill = GradientTexture2D.FILL_RADIAL
+	circle.fill_from = Vector2(0.5, 0.5)
+	circle.fill_to = Vector2(1.0, 0.5)
+	_circle_tele = circle
+	var img := Image.create(64, 64, false, Image.FORMAT_RGBA8)
+	img.fill(Color.WHITE)
+	_rect_tele = ImageTexture.create_from_image(img)
+
+func show_charge_warning(travel: float, radius: float, direction: Vector2) -> void:
+	show_telegraph_rect(travel + radius * 2.0, radius * 2.0, direction)
+	telegraph.position = direction * travel * 0.5

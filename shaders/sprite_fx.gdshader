@@ -7,6 +7,11 @@ uniform vec4  outline_color : source_color = vec4(1.0, 0.85, 0.3, 1.0);
 // Pulses the outline alpha. 0 = steady.
 uniform float outline_pulse : hint_range(0.0, 1.0) = 0.0;
 
+varying vec4 vertex_tint;
+void vertex() {
+	vertex_tint = COLOR;
+}
+
 void fragment() {
 	vec4 col = texture(TEXTURE, UV);
 	
@@ -27,7 +32,7 @@ void fragment() {
 	}
 	
 	col.rgb = mix(col.rgb, flash_color.rgb, flash_amount);
-	COLOR = col;
+	COLOR = col * vertex_tint;
 }
 
 //void light() {

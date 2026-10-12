@@ -1,30 +1,42 @@
-# The Last Forge · Lesson 3.5: The room knows the fight is over
+# The Last Forge · Lesson 3.6: Debug the game you actually built
 
-Chapter 3, Make One Room Worth Fighting In. This branch is the project at the **end of lesson 3.5** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
+Chapter 3, Make One Room Worth Fighting In. This branch is the project at the **end of lesson 3.6** of the free Godot 4 roguelike course on the [CodingQuests YouTube channel](https://www.youtube.com/@CodingQuests).
 
-Starting lesson 3.6? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-3.5.zip), unzip it, and open `project.godot` in Godot 4.7.2.
+Starting lesson 4.1? This branch is your starting point: [download it as a ZIP](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/archive/refs/heads/lesson-3.6.zip), unzip it, and open `project.godot` in Godot 4.7.2.
 
-[← lesson 3.4](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-3.4) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 3.6 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-3.6)
+[← lesson 3.5](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-3.5) · [all lessons](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube) · [lesson 4.1 →](https://github.com/CodingQuests/2D-Roguelike-Tutorial-youtube/tree/lesson-4.1)
 
-A combat room that spawns a wave away from the player and counts the enemies. At depth 1 that's three grunts, a caster, a charger and two skitterlings. Each enemy fades in with a ring. The last kill slows time and asks the HUD to show ROOM CLEARED. The HUD scene with a health bar, a dash bar and a status label is in.
+The checkpoint. This branch has every card applied, so the room works end to end:
+- The HUD follows your health and dash.
+- Warnings are round or rectangular and match the hits they warn about.
+- Tints and spawn fades show.
+- Overlapping sounds play.
+- Clearing the room shows ROOM CLEARED.
 
 
 ## Files added
-- `Scenes/CombatRoom.tscn`: duplicated from main. It has an `Enemies` container, `Projectiles` (group `projectiles`) and `Pickups` (group `pickups`), plus the HUD instance, and the root runs `RoomController.gd`.
-- `Scripts/RoomController.gd` (and its `.uid`): preloads the five enemy scenes and builds the wave list by depth. `_random_spawn_point()` tries 12 times for a spot at least 120 px from the player, then falls back to the farthest corner. It tracks the alive count. `_clear_active_room()` runs slow-mo, the status text and the `room_clear` sound.
-- `Scenes/HUD.tscn`: a CanvasLayer with HealthBar, DashBar and StatusLabel.
-- `Scripts/HUD.gd` (and its `.uid`): registers with GameManager, reads the player's health and dash every frame, and has `show_status()`.
-- `Scripts/StatBar.gd` (and its `.uid`): a bar drawn in `_draw()` with a delayed "ghost" behind it.
+- None
 
 ## Files changed
-- `Scripts/EnemyBase.gd`: adds `spawn_in()` (ring, particles, then a scale and fade tween), `_spawning`, `_base_sprite_scale`, and a spawning guard in `_physics_process()`.
-- `Scripts/GameManager.gd`: adds `hud`, `player`, `register_hud()`, `register_player()` and `slow_mo()`.
-- `Scripts/PlayerController.gd`: calls `GameManager.register_player(self)` in `_ready()`.
+- `Scripts/PlayerController.gd`: adds the `health` reference (card 04). `_physics_process()` returns while time is stopped and updates aim before reading attacks (card 02), and `move_and_slide()` is guarded ("Also guard the actual movement call").
+- `Scripts/EnemyBase.gd`:
+  - `_init_telegraph_textures()` builds a radial circle and a white rectangle once.
+  - The end of `_ready()` saves `_base_sprite_scale`, builds the textures and hides the telegraph (card 08).
+  - Each warning picks its texture, and the circle resets its position.
+  - Adds `show_charge_warning()` (card 09).
+  - `move_and_slide()` is guarded.
+- `Scripts/BossEnemy.gd`: `SLAM_RADIUS` (22) is used for both the slam warning and the hit, and the charge warning covers the path (card 09).
+- `Scripts/ChargerEnemy.gd`: `show_charge_warning(charge_speed * charge_time, 7.0, _charge_dir)` (card 09). The card gives 7.0 as the charger's hitbox radius, so the charge's hit uses 7.0 too (`enable_attack_area(Vector2.ZERO, 7.0)`, was 18.0) and the warning covers the hit.
+- `Scripts/AudioManager.gd`: a pool of 5 voices, a default of -12 dB, and a `room_clear` sound (card 10).
+- `shaders/sprite_fx.gdshader`: passes the vertex tint into `fragment()` (card 07).
+- `Scenes/EnemyBase.tscn`: the enemy body is on layer 3 with mask 1 and 2 (card 06).
+- `Scenes/Projectile.tscn`: the projectile's mask is the world, layer 1 (card 06).
+- `Scenes/HUD.tscn`: `HUD.gd` is attached to the root CanvasLayer (card 04).
 
 ## Good to know
-- Run `CombatRoom.tscn` with F6 (Run Current Scene). `main.tscn` (the boss arena) is still the main scene.
-- `RoomController.gd` uses `$player` (lowercase) to match the node in CombatRoom, fixed in the silent pickup near the end. Its preloads use `res://Scenes/` with a capital S, following 3.3's correction.
-- Known at this point: `HUD.gd` isn't attached to `HUD.tscn`, so the bars don't follow the player and ROOM CLEARED never appears. `room_clear` has no sound in AudioManager. `_base_sprite_scale` is never set, so `spawn_in()` grows every sprite back to scale 1. Lesson 3.6 fixes all three (cards 04, 10 and 08), along with 3.4's open items (the boss's square warnings, the 80/22 slam and the warning visible at start).
+- Card 01 (scene paths and `$player`) and card 05 (the swapped grunt and caster scripts) need no edit here. Your project got those right in 3.3 and 3.5. Card 03's registrations are already in: the camera since 2.5 and the player and HUD since 3.5.
+- The cards are the source. Where the tested copy used in the demo clips differs and no card shows it, this branch keeps the code from the earlier lessons. For example, the grunt's warning radius and AudioManager's sound lookup are unchanged, and the enemies keep the ranges and hit sizes from lesson 3.3 (the tested copy has smaller ones that the course never shows).
+- Run `CombatRoom.tscn` with F6 to test the room. `main.tscn` (the boss) is still the main scene.
 
 ## Build this part yourself
 

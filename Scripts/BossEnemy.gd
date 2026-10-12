@@ -4,6 +4,8 @@ extends EnemyBase
 
 const PROJECTILE := preload("res://Scenes/Projectile.tscn")
 
+const SLAM_RADIUS := 22.0
+
 enum Pattern { SLAM, VOLLEY, CHARGE }
 
 @export var projectile_damage: float = 12.0
@@ -72,14 +74,14 @@ func _choose_pattern() -> void:
 	var tt := 0.5 if _enraged() else 0.65
 	match _pattern:
 		Pattern.SLAM:
-			show_telegraph_circle(80.0, Color(1, 0.2, 0.2, 0.4))
+			show_telegraph_circle(SLAM_RADIUS, Color(1, 0.2, 0.2, 0.4))
 			state_timer = tt
 		Pattern.VOLLEY:
 			show_telegraph_circle(34.0, Color(0.8, 0.3, 1, 0.45))
 			state_timer = tt
 		Pattern.CHARGE:
 			_charge_dir = dir_to_player()
-			show_telegraph_rect(280.0, 46.0, _charge_dir)
+			show_charge_warning(340.0 * 0.5, 15.0, _charge_dir)
 			state_timer = tt + 0.05
 		
 func _execute_pattern() -> void:
@@ -88,7 +90,7 @@ func _execute_pattern() -> void:
 	match _pattern:
 		Pattern.SLAM:
 			state_timer = 0.2
-			enable_attack_area(Vector2.ZERO, 22.0)
+			enable_attack_area(Vector2.ZERO, SLAM_RADIUS)
 			GameManager.shake_camera(0.5)
 			GameManager.hit_stop(0.05)
 		Pattern.VOLLEY:

@@ -50,13 +50,13 @@ func _enter_windup() -> void:
 	state = State.TELEGRAPH
 	state_timer = windup_time
 	_charge_dir = dir_to_player()          # lock the direction NOW
-	show_telegraph_rect(charge_speed * charge_time * 0.7, 34.0, _charge_dir)
+	show_charge_warning(charge_speed * charge_time, 7.0, _charge_dir)
 
 func _enter_charge() -> void:
 	hide_telegraph()
 	state = State.ATTACK
 	state_timer = charge_time
-	enable_attack_area(Vector2.ZERO, 18.0)  # the body itself hurts
+	enable_attack_area(Vector2.ZERO, 7.0)  # the body itself hurts
 	GameManager.shake_camera(0.12)
 	
 

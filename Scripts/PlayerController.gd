@@ -1,6 +1,7 @@
 class_name PlayerController
 extends CharacterBody2D
 
+@onready var health: HealthComponent = $Health
 @onready var hurtbox: HurtboxComponent = $Hurtbox
 @export var move_speed: float = 180.0
 @onready var sprite_2d: Sprite2D = $WeaponPivot/WeaponSprite
@@ -35,8 +36,10 @@ func _ready() -> void:
 	GameManager.register_player(self)
 	
 func _physics_process(delta: float) -> void:
-	_handle_attack_input()
+	if delta <= 0.0 or Engine.time_scale <= 0.0:
+		return
 	_update_aim()
+	_handle_attack_input()
 	_update_dash(delta)
 	_update_body_juice(delta, _get_move_input().length() > 0.1)
 	if _is_dashing:
@@ -49,7 +52,8 @@ func _physics_process(delta: float) -> void:
 	if not _finite(velocity):
 		velocity = Vector2.ZERO
 		
-	move_and_slide()
+	if Engine.time_scale > 0.0:
+		move_and_slide()
 	if _finite(global_position):
 		_last_good_pos = global_position
 	else:

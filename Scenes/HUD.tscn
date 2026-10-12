@@ -1,8 +1,10 @@
 [gd_scene format=3 uid="uid://bdhxmaw4pdoda"]
 
+[ext_resource type="Script" uid="uid://bvhih3dhxn6ly" path="res://Scripts/HUD.gd" id="1_psnte"]
 [ext_resource type="Script" uid="uid://k6fjhb67sm07" path="res://Scripts/StatBar.gd" id="1_sd512"]
 
 [node name="CanvasLayer" type="CanvasLayer" unique_id=763541727]
+script = ExtResource("1_psnte")
 
 [node name="HealthBar" type="Control" parent="." unique_id=56432768]
 layout_mode = 3

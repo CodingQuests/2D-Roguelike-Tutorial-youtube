@@ -11,7 +11,7 @@ func _ready() -> void:
 
 
 func _on_body_entered(body) -> void:
-	if body is PlayerController and body.invulnerable:
+	if body is PlayerController and body.hurtbox.invulnerable:
 		return
 	print(\"HIT\")
 "

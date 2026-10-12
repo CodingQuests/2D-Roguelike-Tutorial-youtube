@@ -10,16 +10,13 @@
 script/source = "extends CharacterBody2D
 
 @onready var health: HealthComponent = $Health
-const KNOCKBACK_DECAY := 1700.0
-const KNOCKBACK_TAKEN := 0.6      # the player is shoved less than enemies are
+const KNOCKBACK_DECAY := 900.0
+const KNOCKBACK_TAKEN := 1.0     # the player is shoved less than enemies are
 
 var _knockback := Vector2.ZERO
 func _ready() -> void:
 	health.died.connect(_on_health_died)
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed(\"quick_attack\"):
-		health.damage(10.0)
-		print(health.current_health)
+
 
 func _physics_process(delta: float) -> void:
 	velocity = _knockback
@@ -67,6 +64,7 @@ shape = SubResource("CapsuleShape2D_ceyr3")
 collision_layer = 64
 collision_mask = 0
 script = ExtResource("4_3clv1")
+hit_once_per_attack = false
 metadata/_custom_type_script = "uid://bodg87p7ovgmm"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitboxComponent" unique_id=524290147]

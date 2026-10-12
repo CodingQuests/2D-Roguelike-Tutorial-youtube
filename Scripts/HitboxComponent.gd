@@ -12,6 +12,7 @@ var source_node: Node = null
 
 func _ready() -> void:
 	add_to_group("hitbox")
+	
 func reset_hits() -> void:
 	_hit_this_attack.clear()
 	

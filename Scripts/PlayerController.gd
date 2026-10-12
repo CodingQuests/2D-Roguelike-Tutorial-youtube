@@ -6,7 +6,7 @@ extends CharacterBody2D
 @onready var weapon_pivot: Node2D = $WeaponPivot
 @onready var sprite_2d: Sprite2D = $WeaponPivot/Sprite2D
 @onready var player_sprite: Sprite2D = $Tile0096
-
+@onready var hitbox: HitboxComponent = $WeaponPivot/HitboxComponent
 var _last_good_pos := Vector2.ZERO
 
 @export var dash_speed: float = 520.0
@@ -15,7 +15,6 @@ var _last_good_pos := Vector2.ZERO
 var _is_dashing := false
 var _dash_timer := 0.0
 var _dash_dir := Vector2.RIGHT
-var invulnerable := false
 @export var dash_cooldown: float = 0.6
 
 var _dash_cd_timer := 0.0
@@ -33,6 +32,8 @@ func _ready() -> void:
 	_base_sprite_scale = player_sprite.scale
 	
 func _physics_process(delta: float) -> void:
+	if Input.is_action_just_pressed("quick_attack"):
+		hitbox.reset_hits()
 	_update_aim()
 	_update_dash(delta)
 	_update_body_juice(delta, _get_move_input().length() > 0.1)
@@ -81,13 +82,11 @@ func _start_dash() -> void:
 	_is_dashing = true
 	_dash_timer = dash_duration
 	_dash_cd_timer = dash_cooldown
-	invulnerable = true
 	hurtbox.invulnerable = true
 	sprite_2d.modulate = Color(0.7, 0.9, 1.0)
 	player_sprite.modulate = Color(0.7, 0.9, 1.0)
 func _end_dash() -> void:
 	_is_dashing = false
-	invulnerable = false
 	hurtbox.invulnerable = false
 	sprite_2d.modulate = Color.WHITE
 	player_sprite.modulate = Color.WHITE

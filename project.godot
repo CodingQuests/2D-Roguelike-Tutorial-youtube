@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="2D Rogulike project tutorial"
+run/main_scene="uid://c5n7s4xqgx2x"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
 
@@ -83,5 +84,6 @@ swap_weapon={
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="mobile"

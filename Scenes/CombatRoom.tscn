@@ -9,8 +9,11 @@
 [node name="CombatRoom" type="Node2D" unique_id=535670457]
 script = ExtResource("1_qhs6v")
 
+[node name="Floor" type="TileMapLayer" parent="." unique_id=900860499]
+script = ExtResource("5_uhcli")
+
 [node name="player" parent="." unique_id=710743712 instance=ExtResource("1_nl0ey")]
-position = Vector2(143, 149)
+position = Vector2(231, 354)
 dash_cooldown = 2.965
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1987023519]
@@ -26,6 +29,3 @@ target_path = NodePath("../player")
 [node name="Pickups" type="Node2D" parent="." unique_id=1956815919 groups=["pickups"]]
 
 [node name="CanvasLayer" parent="." unique_id=763541727 instance=ExtResource("4_qhs6v")]
-
-[node name="Floor" type="TileMapLayer" parent="." unique_id=900860499]
-script = ExtResource("5_uhcli")

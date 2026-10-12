@@ -2,7 +2,6 @@ class_name RoomController
 extends Node2D
 
 
-
 const GRUNT_SCENE := preload("res://Scenes/GruntEnemy.tscn")
 const CHARGER_SCENE := preload("res://Scenes/ChargerEnemy.tscn")
 const CASTER_SCENE := preload("res://Scenes/CasterEnemy.tscn")
@@ -18,8 +17,8 @@ var _alive: int = 0
 func _ready() -> void:
 	randomize()
 	await get_tree().process_frame
-	_start_wave()
 	floor_layer.generate()
+	player.global_position = floor_layer.entrance_center()
 
 func _start_wave() -> void:
 	_alive = 0

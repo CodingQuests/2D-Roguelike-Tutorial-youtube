@@ -6,12 +6,31 @@ extends CharacterBody2D
 @onready var sprite_2d: Sprite2D = $WeaponPivot/Sprite2D
 
 var _last_good_pos := Vector2.ZERO
+
+@export var dash_speed: float = 520.0
+@export var dash_duration: float = 0.14
+
+var _is_dashing := false
+var _dash_timer := 0.0
+var _dash_dir := Vector2.RIGHT
+
+@export var dash_cooldown: float = 0.6
+
+var _dash_cd_timer := 0.0
+
+
 func _ready() -> void:
 	_last_good_pos = global_position
 	
 func _physics_process(delta: float) -> void:
 	_update_aim()
-	velocity = _get_move_input() * move_speed
+	_update_dash(delta)
+	if _is_dashing:
+		velocity = _dash_dir * dash_speed
+	else:
+		velocity = _get_move_input() * move_speed
+		
+		
 	if not _finite(velocity):
 		velocity = Vector2.ZERO
 		
@@ -37,4 +56,44 @@ func _update_aim() -> void:
 	
 func _finite(v: Vector2) -> bool:
 	return is_finite(v.x) and is_finite(v.y)
+	
+
+
+func _start_dash() -> void:
+	var input := _get_move_input()
+	if input.length() > 0.1:
+		_dash_dir = input.normalized()
+	else:
+		var to_mouse := get_global_mouse_position() - global_position
+		_dash_dir = to_mouse.normalized() if to_mouse.length() > 0.01 else Vector2.RIGHT
+	_is_dashing = true
+	_dash_timer = dash_duration
+	_dash_cd_timer = dash_cooldown
+func _end_dash() -> void:
+	_is_dashing = false
+	
+	
+func _update_dash(delta: float) -> void:
+	if _dash_cd_timer > 0.0:
+		_dash_cd_timer -= delta
+		
+	if _is_dashing:
+		_dash_timer -= delta
+		if _dash_timer <= 0.0:
+			_end_dash()
+		return
+	if Input.is_action_just_pressed("dash") and _dash_cd_timer <= 0.0:
+		_start_dash()
+	
+	
+## 1.0 = ready, 0.0 = just used.
+func get_dash_ratio() -> float:
+	if dash_cooldown <= 0.0:
+		return 1.0
+	return clampf(1.0 - _dash_cd_timer / dash_cooldown, 0.0, 1.0)
+	
+	
+	
+	
+	
 	

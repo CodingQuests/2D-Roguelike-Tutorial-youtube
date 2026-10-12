@@ -6,6 +6,7 @@
 
 [node name="Player" parent="." unique_id=710743712 instance=ExtResource("1_jjgbg")]
 position = Vector2(143, 149)
+dash_cooldown = 2.965
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1987023519]
 position = Vector2(143, 149)

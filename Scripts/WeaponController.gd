@@ -12,7 +12,7 @@ var state: int = State.IDLE
 var _state_timer := 0.0
 var _cooldown := 0.0
 var _current_is_heavy := false
-var _player: Node = null
+var _player: PlayerController = null
 const SWORD := 0
 const SPEAR := 1
 const DAGGERS := 2
@@ -150,9 +150,16 @@ func is_busy() -> bool:
 	
 func _compute_damage() -> float:
 	var p := _profile()
-	return float(p["h_dmg"]) if _current_is_heavy else float(p["q_dmg"])
+	# Base from the weapon profile, heavy or quick depending on which swing this is.
+	var base: float = float(p["h_dmg"]) if _current_is_heavy else float(p["q_dmg"])
+	# Bonus off the player, the matching one. Add them.
+	var bonus: float = _player.heavy_bonus_damage if _current_is_heavy else _player.quick_bonus_damage
+	return base + bonus
+
+	
 func _cd_mult() -> float:
-	return 1.0
+	return _player.attack_cooldown_mult
+	
 func _on_hit_landed(_hurtbox: Node) -> void:
 	AudioManager.play("hit")
 	AudioManager.play("heavy" if _current_is_heavy else "slash")

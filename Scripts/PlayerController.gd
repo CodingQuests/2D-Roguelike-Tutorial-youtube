@@ -1,6 +1,8 @@
 class_name PlayerController
 extends CharacterBody2D
 
+signal stats_changed
+
 @onready var health: HealthComponent = $Health
 @onready var hurtbox: HurtboxComponent = $Hurtbox
 @export var move_speed: float = 180.0
@@ -10,25 +12,29 @@ extends CharacterBody2D
 @onready var weapon: WeaponController = $WeaponPivot
 
 
-var _last_good_pos := Vector2.ZERO
 
 @export var dash_speed: float = 520.0
 @export var dash_duration: float = 0.14
+@export var dash_cooldown: float = 0.6
 
+var quick_bonus_damage: float = 0.0
+var heavy_bonus_damage: float = 0.0
+var move_speed_mult: float = 1.0
+var attack_cooldown_mult: float = 1.0
+
+var _last_good_pos := Vector2.ZERO
 var _is_dashing := false
 var _dash_timer := 0.0
 var _dash_dir := Vector2.RIGHT
-@export var dash_cooldown: float = 0.6
-
 var _dash_cd_timer := 0.0
-
 var _base_sprite_scale := Vector2.ONE
 var _bob_time := 0.0
+var _knockback := Vector2.ZERO
 
 const KNOCKBACK_DECAY := 1700.0
 const KNOCKBACK_TAKEN := 0.6      # the player is shoved less than enemies are
 
-var _knockback := Vector2.ZERO
+var items: Array = []
 
 func _ready() -> void:
 	_last_good_pos = global_position
@@ -36,6 +42,8 @@ func _ready() -> void:
 	GameManager.register_player(self)
 	
 func _physics_process(delta: float) -> void:
+	if get_tree().paused:
+		return
 	if delta <= 0.0 or Engine.time_scale <= 0.0:
 		return
 	_update_aim()
@@ -45,7 +53,7 @@ func _physics_process(delta: float) -> void:
 	if _is_dashing:
 		velocity = _dash_dir * dash_speed
 	else:
-		velocity = _get_move_input() * move_speed * weapon.get_move_factor() + _knockback
+		velocity = _get_move_input() * move_speed * move_speed_mult * weapon.get_move_factor() + _knockback
 		_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
 		
 		
@@ -140,3 +148,23 @@ func lunge(dir: Vector2, force: float) -> void:
 	if _is_dashing or dir.length() < 0.01:
 		return
 	_knockback = dir.normalized() * force
+
+
+func has_item(id: String) -> bool:
+	for it in items:
+		# get("id", "") rather than ["id"], so a def with no id can't crash it.
+		if it.get("id", "") == id:
+			return true
+	return false
+
+func apply_upgrade(def: Dictionary) -> void:
+	# Pull the Callable out of the def and call it with self, so the upgrade
+	# gets the player. Then record the def and tell everyone.
+	var fn: Callable = def["apply"]
+	fn.call(self)
+	items.append(def)
+	on_stats_changed()
+	
+func on_stats_changed() -> void:
+	stats_changed.emit()
+	

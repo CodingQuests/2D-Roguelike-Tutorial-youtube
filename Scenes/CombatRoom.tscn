@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://ckvu8yjgcr227" path="res://Scenes/player.tscn" id="1_nl0ey"]
 [ext_resource type="Script" uid="uid://dge2i6hoo4yel" path="res://Scripts/RoomController.gd" id="1_qhs6v"]
+[ext_resource type="Script" uid="uid://b1fny8ml3p3ck" path="res://Scripts/UpgradeManager.gd" id="2_ewei2"]
 [ext_resource type="Script" uid="uid://da0jks2q6tig8" path="res://Scripts/PlayerCamera.gd" id="2_qhs6v"]
 [ext_resource type="PackedScene" uid="uid://bdhxmaw4pdoda" path="res://Scenes/HUD.tscn" id="4_qhs6v"]
 [ext_resource type="Script" uid="uid://hffhtu1gu7t3" path="res://Scripts/Dungeon.gd" id="5_uhcli"]
@@ -17,6 +18,10 @@ glow_hdr_threshold = 1.15
 [node name="CombatRoom" type="Node2D" unique_id=535670457]
 y_sort_enabled = true
 script = ExtResource("1_qhs6v")
+
+[node name="Upgrades" type="Node" parent="." unique_id=575907774]
+script = ExtResource("2_ewei2")
+metadata/_custom_type_script = "uid://b1fny8ml3p3ck"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=512268955]
 environment = SubResource("Environment_uhcli")

@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://ldv214gyasck"]
+
+[ext_resource type="Script" uid="uid://bmvhuqcirfbxw" path="res://Scripts/UpgradeCard.gd" id="1_qlvtu"]
+
+[node name="UpgradeCard" type="PanelContainer" unique_id=540179315]
+custom_minimum_size = Vector2(224, 268)
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_qlvtu")
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=886882853]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBox" unique_id=622001]
+layout_mode = 2
+text = "UPGRADE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Desc" type="Label" parent="VBox" unique_id=468172266]
+layout_mode = 2
+text = "Description"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Choose" type="Button" parent="VBox" unique_id=882757567]
+layout_mode = 2
+text = "Choose"

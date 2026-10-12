@@ -12,12 +12,14 @@ const BOSS_SCENE := preload("res://Scenes/BossEnemy.tscn")
 @onready var player: PlayerController = $player
 @onready var enemies: Node2D = $Enemies
 @onready var floor_layer: Dungeon = $Floor
+@onready var _upgrades: UpgradeManager = $Upgrades
 
 var _alive: int = 0
 var _current_room: int = -2
 var _active_room: int = -1          # -1 = no fight in progress
 var _floor_depth: int = 1
 var _busy: bool = false
+var _reward_is_boss := false
 
 func _ready() -> void:
 	randomize()
@@ -65,21 +67,48 @@ func _wave_list(depth: int) -> Array:
 
 func _clear_active_room() -> void:
 	var i := _active_room
-	if i < 0:
+	# Bail if there's no room or we're already busy.
+	if i < 0 or _busy:
 		return
+	_busy = true
 	_active_room = -1
+	# Mark it cleared, unlock the doors, count it, note whether it was the boss.
 	floor_layer.rooms[i]["cleared"] = true
 	floor_layer.unlock_room(i)
+	GameManager.run_stats["rooms_cleared"] += 1
+	_reward_is_boss = floor_layer.rooms[i]["type"] == Dungeon.RoomType.BOSS
+	# Deferred so the killing blow finishes resolving before we pause the tree.
+	_finish_room_clear.call_deferred()
+	
+func _finish_room_clear() -> void:
+	# Slow-mo to 35% for a third of a second, the clear sound, the banner.
 	GameManager.slow_mo(0.35, 0.35)
 	AudioManager.play("room_clear")
-	GameManager.run_stats["rooms_cleared"] += 1
 	_set_status("ROOM CLEARED", 1.5)
-	if floor_layer.rooms[i]["type"] == Dungeon.RoomType.BOSS:
-		_busy = true
-		await get_tree().create_timer(1.5).timeout
-		_enter_floor(_floor_depth + 1)
-		_busy = false
+	await get_tree().create_timer(0.4, false, false, true).timeout
+	# They can still die during that wait.
+	if not player.health.is_alive():
+		return
+	var choices: Array = _upgrades.get_choices(3)
+	# An empty pool goes straight to the callback with an empty dict.
+	if choices.is_empty():
+		_on_upgrade_chosen({})
+	else:
+		GameManager.hud.show_upgrades(choices, _on_upgrade_chosen)
 
+func _on_upgrade_chosen(def: Dictionary) -> void:
+	# Same two guards, so a stale callback can't apply anything.
+	if not _busy or not player.health.is_alive():
+		return
+	if not def.is_empty():
+		player.apply_upgrade(def)
+	get_tree().paused = false
+	# If that was the boss, now we descend.
+	if _reward_is_boss:
+		_enter_floor(_floor_depth + 1)
+	_reward_is_boss = false
+	_busy = false
+	
 func _set_status(text: String, auto_hide: float) -> void:
 	if GameManager.hud and GameManager.hud.has_method("show_status"):
 		GameManager.hud.show_status(text, auto_hide)

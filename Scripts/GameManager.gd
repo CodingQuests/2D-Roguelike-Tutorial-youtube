@@ -50,4 +50,15 @@ func register_player(p: Node) -> void:
 	player = p
 
 
-	
+func register_gold(amount: int) -> void:
+	# run_stats is already wiped when a run ends, so gold dies with the run for
+	# free. .get("gold", 0): the key isn't there until the first coin.
+	run_stats["gold"] = int(run_stats.get("gold", 0)) + amount
+
+func spend_gold(amount: int) -> bool:
+	# Only takes the money when it can. The caller decides what a no looks like.
+	if int(run_stats.get("gold", 0)) < amount:
+		return false
+	run_stats["gold"] -= amount
+	return true
+

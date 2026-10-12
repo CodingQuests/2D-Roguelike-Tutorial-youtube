@@ -10,6 +10,7 @@ const UPGRADE_CARD := preload("res://Scenes/UpgradeCard.tscn")
 @onready var upgrade_panel: Control = $UpgradePanel
 @onready var _card_row: HBoxContainer = $UpgradePanel/Cards
 @onready var tier_label: Label = $TierLabel
+@onready var gold_label: Label = $GoldLabel
 
 var _player: PlayerController = null
 var _status_token := 0
@@ -52,7 +53,7 @@ func _process(_delta: float) -> void:
 	corruption_bar.set_ratio(_player.corruption / _player.max_corruption)
 	dash_bar.set_ratio(_player.get_dash_ratio())
 	tier_label.text = _player.get_corruption_tier()
-
+	gold_label.text = "%d g" % int(GameManager.run_stats.get("gold", 0))
 func show_status(text: String, auto_hide: float = 1.5) -> void:
 	_status_token += 1
 	var token := _status_token

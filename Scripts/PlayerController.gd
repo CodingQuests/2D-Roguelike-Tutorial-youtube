@@ -47,6 +47,12 @@ var _base_sprite_scale := Vector2.ONE
 var _bob_time := 0.0
 var _knockback := Vector2.ZERO
 var _last_tier := "Stable"
+var active_item: String = ""
+var active_name: String = ""
+var active_cooldown: float = 6.0
+var _active_cd_timer: float = 0.0
+# For Phase Step's i-frames, later in this step.
+var _phase_timer: float = 0.0
 
 const KNOCKBACK_DECAY := 1700.0
 const KNOCKBACK_TAKEN := 0.6      # the player is shoved less than enemies are
@@ -71,8 +77,11 @@ func _physics_process(delta: float) -> void:
 		return
 	if delta <= 0.0 or Engine.time_scale <= 0.0:
 		return
+	_phase_timer = maxf(0.0, _phase_timer - delta)
 	_update_aim()
 	_handle_attack_input()
+	_handle_active_input(delta)
+	_sync_invulnerability()
 	_update_dash(delta)
 	_update_body_juice(delta, _get_move_input().length() > 0.1)
 	if _is_dashing:
@@ -126,7 +135,7 @@ func _start_dash() -> void:
 	player_sprite.modulate = Color(0.7, 0.9, 1.0)
 func _end_dash() -> void:
 	_is_dashing = false
-	hurtbox.invulnerable = false
+	_sync_invulnerability()
 	sprite_2d.modulate = Color.WHITE
 	player_sprite.modulate = Color.WHITE
 	
@@ -260,4 +269,87 @@ func get_execute_threshold() -> float:
 	# x1.6 with harvest on, x1 without, then clamped at 0.75: even the synergy
 	# can't execute something with three quarters of its health left.
 	return clampf(execute_threshold * (1.6 if syn_harvest else 1.0), 0.0, 0.75)
+	
+func set_active_item(id: String, display_name: String, cooldown: float) -> void:
+	active_item = id
+	active_name = display_name
+	active_cooldown = cooldown
+	_active_cd_timer = 0.0
+	
+	
+func _handle_active_input(delta: float) -> void:
+	if _active_cd_timer > 0.0:
+		_active_cd_timer -= delta
+	# Only fires with something in the slot, ready, and E down this frame. The
+	# quoted "active_item" is the input action, not the field.
+	if active_item != "" and _active_cd_timer <= 0.0 and Input.is_action_just_pressed("active_item"):
+		use_active()
+
+func use_active() -> void:
+	# Start the cooldown, then match on the id string. One line per ability.
+	_active_cd_timer = active_cooldown
+	match active_item:
+		"forge_pulse":  _forge_pulse()
+		"phase_step":   _phase_step()
+		"blood_siphon": _blood_siphon()
+
+
+func _forge_pulse() -> void:
+	# A ring, a shake, the heavy sound.
+	var world := get_tree().current_scene
+	Juice.ring(world, global_position, Color(1.0, 0.6, 0.2, 0.9), 140.0, 0.4, 4.0)
+	GameManager.shake_camera(0.35)
+	AudioManager.play("heavy")
+	# Everything inside 140 px takes 35 via take_damage(), knocked away from you.
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if is_instance_valid(e) and global_position.distance_to(e.global_position) < 140.0:
+			if e.has_method("take_damage"):
+				e.take_damage(35.0, global_position)
+
+func _phase_step() -> void:
+	# Aim at the mouse. Vector2.RIGHT if the mouse is basically on top of you.
+	var to_mouse := get_global_mouse_position() - global_position
+	var dir := to_mouse.normalized() if to_mouse.length() > 1.0 else Vector2.RIGHT
+	var motion := dir * 130.0
+	var collision := KinematicCollision2D.new()
+	# test_move sweeps the player's actual body along the motion. Adding 130px
+	# directly would teleport straight through walls and locked gates.
+	if test_move(global_transform, motion, collision):
+		motion = collision.get_travel()
+	global_position += motion
+	# So _last_good_pos agrees with where you are now.
+	_last_good_pos = global_position
+	# 0.15 s of i-frames, then sync the flag.
+	_phase_timer = 0.15
+	_sync_invulnerability()
+	AudioManager.play("dash")
+
+func _sync_invulnerability() -> void:
+	hurtbox.invulnerable = not health.is_alive() or _is_dashing or _phase_timer > 0.0
+
+func _blood_siphon() -> void:
+	# Nearest living enemy inside 220. Same search as the chain.
+	var best: Node2D = null
+	var best_d := 220.0
+	for e in get_tree().get_nodes_in_group("enemy"):
+		if not is_instance_valid(e) or e.is_queued_for_deletion() or not e.health.is_alive():
+			continue
+		var d: float = global_position.distance_to(e.global_position)
+		if d < best_d:
+			best_d = d
+			best = e
+	# No target: give the cooldown back and say so. A wasted panic button is
+	# a death.
+	if best == null:
+		_active_cd_timer = 0.0
+		Juice.floating_text(get_tree().current_scene, global_position, "NO TARGET")
+		return
+	# 40 damage to them, 25 heal to you. The number on screen is what you
+	# actually healed, not 25, because heal() caps at max.
+	if best.has_method("take_damage"):
+		best.take_damage(40.0, global_position)
+	var before := health.current_health
+	health.heal(25.0)
+	Juice.floating_text(get_tree().current_scene, global_position,
+		"+%d" % int(health.current_health - before), Color(0.4, 1.0, 0.5), 14)
 	

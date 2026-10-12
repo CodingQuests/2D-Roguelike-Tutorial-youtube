@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://dxuswkjte8wdq"]
+
+[ext_resource type="Texture2D" uid="uid://ddg5xqefvkrn6" path="res://Assets/Tiles/tile_0032.png" id="1_7i7et"]
+[ext_resource type="Script" uid="uid://b6q7sunfn7lrw" path="res://Scripts/ItemPedestal.gd" id="1_ykkum"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hhunp"]
+radius = 28.0
+
+[node name="ItemPedestal" type="Area2D" unique_id=1431775310]
+collision_layer = 128
+collision_mask = 2
+script = ExtResource("1_ykkum")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1854374221]
+texture = ExtResource("1_7i7et")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1178407682]
+shape = SubResource("CircleShape2D_hhunp")
+
+[node name="Prompt" type="Label" parent="." unique_id=1919356135]
+offset_left = -27.0
+offset_top = -55.0
+offset_right = 28.0
+offset_bottom = -32.0
+text = "Press F"

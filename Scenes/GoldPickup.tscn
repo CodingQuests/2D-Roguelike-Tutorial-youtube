@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://djeyf47b7cvv0"]
+
+[ext_resource type="Script" uid="uid://ogqx2mq3d78e" path="res://Scripts/GoldPickup.gd" id="1_r3pd5"]
+[ext_resource type="Texture2D" uid="uid://tgmrhjkfpro" path="res://Assets/Tiles/tile_0116.png" id="1_s3y7o"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hhunp"]
+
+[node name="GoldPickup" type="Area2D" unique_id=1470712215]
+collision_layer = 128
+collision_mask = 2
+script = ExtResource("1_r3pd5")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1656667355]
+shape = SubResource("CircleShape2D_hhunp")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=999967714]
+modulate = Color(1, 1, 0, 1)
+self_modulate = Color(1, 1, 0, 1)
+texture = ExtResource("1_s3y7o")

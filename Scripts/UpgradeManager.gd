@@ -40,6 +40,13 @@ func _ready() -> void:
 		"desc": "Heavy attack becomes a 360° whirlwind", "corruption": 18, "apply": _apply_whirlwind},
 		{"id": "twin_strike", "title": "Twin Fang Curse", "rarity": "rare", "unique": true,
 		"desc": "Every melee hit adds a second strike for 50% damage", "corruption": 16, "apply": _apply_twin},
+		{"id": "forge_pulse", "title": "Forge Pulse", "rarity": "rare", "unique": true,
+		"desc": "E: blast everything around you", "corruption": 10, "apply": _apply_pulse},
+		{"id": "phase_step", "title": "Phase Step", "rarity": "rare", "unique": true,
+		"desc": "E: blink, briefly invulnerable", "corruption": 10, "apply": _apply_phase},
+		{"id": "blood_siphon", "title": "Blood Siphon", "rarity": "cursed", "unique": true,
+		"desc": "E: drain an enemy to heal", "corruption": 14, "apply": _apply_siphon},
+		
 
 	]
 
@@ -99,6 +106,17 @@ func _apply_whirlwind(p: PlayerController) -> void:
 
 func _apply_twin(p: PlayerController) -> void:
 	p.twin_strike = true
+
+func _apply_pulse(p: PlayerController) -> void:
+	p.set_active_item("forge_pulse", "Forge Pulse", 6.0)
+
+func _apply_phase(p: PlayerController) -> void:
+	p.set_active_item("phase_step", "Phase Step", 5.0)
+
+func _apply_siphon(p: PlayerController) -> void:
+	p.set_active_item("blood_siphon", "Blood Siphon", 8.0)
+	
+	
 func get_choices(count: int) -> Array:
 	var owned: Array = _owned_unique_ids()
 	# The pool is built by hand now. Skip any unique you already own, keep the
